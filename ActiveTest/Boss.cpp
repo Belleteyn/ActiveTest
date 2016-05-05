@@ -12,6 +12,7 @@ Boss::Boss(QObject *parent)
     return;
 
   QObject::connect(smsObject_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
+  QObject::connect(smsObject_, SIGNAL(messageSet()), this, SLOT(onMessageSet()));
   smsObject_->start();
 }
 
@@ -34,6 +35,12 @@ void Boss::onTitleCheck(bool isTitleAlive)
     qDebug() << "title id dead";
     //TODO ???
   }
+}
+
+void Boss::onMessageSet()
+{
+  //TODO send message confirmation to server
+  qDebug() << "=== on message set ===";
 }
 
 void Boss::onEmptyXml()

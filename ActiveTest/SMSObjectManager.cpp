@@ -143,6 +143,7 @@ void SMSObjectManager::setMessage(int id, const QString message, int priority, i
     else
     {
       qDebug() << "succes send message";
+      messageSet();
     }
 
     SysFreeString(bText);

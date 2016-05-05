@@ -28,6 +28,7 @@ public:
 
 signals:
   void titleCheck(bool isTitleAlive);
+  void messageSet();
 
 private slots:
   void onTitleMonitorTimer();
