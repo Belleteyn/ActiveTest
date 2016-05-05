@@ -1,0 +1,154 @@
+﻿// Created by Microsoft (R) C/C++ Compiler Version 12.00.31101.0 (35887ac2).
+//
+// d:\proj\active\build-activetest-desktop_qt_5_6_0_msvc2013_32bit-debug\debug\SMSObjMgr.tli
+//
+// Wrapper implementations for Win32 type library 4892F679-C799-439A-828D-3C7592D4D201
+// compiler-generated file created 04/19/16 at 13:43:56 - DO NOT EDIT!
+
+#pragma once
+
+//
+// interface ISMSCallBack wrapper method implementations
+//
+
+inline HRESULT ISMSCallBack::OnMessageShown ( long MsgID ) {
+    HRESULT _hr = raw_OnMessageShown(MsgID);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+//
+// interface ISMSObject wrapper method implementations
+//
+
+inline HRESULT ISMSObject::SetMessage ( _bstr_t Text, _bstr_t Nick, long StyleIndex, long MsgID ) {
+    HRESULT _hr = raw_SetMessage(Text, Nick, StyleIndex, MsgID);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT ISMSObject::Advise ( IUnknown * pIUnk ) {
+    HRESULT _hr = raw_Advise(pIUnk);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT ISMSObject::UnAdvise ( ) {
+    HRESULT _hr = raw_UnAdvise();
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline float ISMSObject::TestMessage ( _bstr_t bstrText, _bstr_t bstrNick, long lStyleIndex, long lMsgID ) {
+    float _result = 0;
+    HRESULT _hr = raw_TestMessage(bstrText, bstrNick, lStyleIndex, lMsgID, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline long ISMSObject::GetStyleCount ( ) {
+    long _result = 0;
+    HRESULT _hr = raw_GetStyleCount(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline HRESULT ISMSObject::SetStyleMessage ( _bstr_t bstrNickStyle, _bstr_t bstrNick, _bstr_t bstrTextStyle, _bstr_t bstrText, long lMsgID, long bNewLine ) {
+    HRESULT _hr = raw_SetStyleMessage(bstrNickStyle, bstrNick, bstrTextStyle, bstrText, lMsgID, bNewLine);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+//
+// interface ISMSObjectCheck wrapper method implementations
+//
+
+inline HRESULT ISMSObjectCheck::CheckStyleMessage ( _bstr_t bstrNickStyle, _bstr_t bstrNick, _bstr_t bstrTextStyle, _bstr_t bstrText, long bNewLine, float * pfWidthFullness, float * pfHeightFullness ) {
+    HRESULT _hr = raw_CheckStyleMessage(bstrNickStyle, bstrNick, bstrTextStyle, bstrText, bNewLine, pfWidthFullness, pfHeightFullness);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT ISMSObjectCheck::CheckMessage ( _bstr_t bstrText, _bstr_t bstrNick, long lStyleIndex, float * pfWidthFullness, float * pfHeightFullness ) {
+    HRESULT _hr = raw_CheckMessage(bstrText, bstrNick, lStyleIndex, pfWidthFullness, pfHeightFullness);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+//
+// interface ISMSObjectsManager wrapper method implementations
+//
+
+inline int ISMSObjectsManager::GetSMSObjectsCount ( ) {
+    int _result = 0;
+    HRESULT _hr = raw_GetSMSObjectsCount(&_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _result;
+}
+
+inline _bstr_t ISMSObjectsManager::GetSMSObjectName ( int Index ) {
+    BSTR _result = 0;
+    HRESULT _hr = raw_GetSMSObjectName(Index, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _bstr_t(_result, false);
+}
+
+inline IUnknownPtr ISMSObjectsManager::GetSMSObjectByIndex ( int Index ) {
+    IUnknown * _result = 0;
+    HRESULT _hr = raw_GetSMSObjectByIndex(Index, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return IUnknownPtr(_result, false);
+}
+
+inline IUnknownPtr ISMSObjectsManager::GetSMSObjectByName ( _bstr_t Name ) {
+    IUnknown * _result = 0;
+    HRESULT _hr = raw_GetSMSObjectByName(Name, &_result);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return IUnknownPtr(_result, false);
+}
+
+inline HRESULT ISMSObjectsManager::SetMessage ( _bstr_t bstrSMSName, _bstr_t bstrText, _bstr_t bstrNick, long lStyleIndex, long lMsgID ) {
+    HRESULT _hr = raw_SetMessage(bstrSMSName, bstrText, bstrNick, lStyleIndex, lMsgID);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT ISMSObjectsManager::SetStyleMessageTo ( _bstr_t bstrSMSName, _bstr_t bstrNickStyle, _bstr_t bstrNick, _bstr_t bstrTextStyle, _bstr_t bstrText, long lMsgID, long bNewLine ) {
+    HRESULT _hr = raw_SetStyleMessageTo(bstrSMSName, bstrNickStyle, bstrNick, bstrTextStyle, bstrText, lMsgID, bNewLine);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+//
+// interface IRegistration wrapper method implementations
+//
+
+inline HRESULT IRegistration::Register ( IUnknown * pUnk, _bstr_t Name, GUID * pGuid ) {
+    HRESULT _hr = raw_Register(pUnk, Name, pGuid);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT IRegistration::Unregister ( _bstr_t Name ) {
+    HRESULT _hr = raw_Unregister(Name);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT IRegistration::Reregister ( _bstr_t OldName, _bstr_t NewName ) {
+    HRESULT _hr = raw_Reregister(OldName, NewName);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT IRegistration::UnregisterByGuid ( GUID guid ) {
+    HRESULT _hr = raw_UnregisterByGuid(guid);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}
+
+inline HRESULT IRegistration::RenameByGuid ( GUID guid, _bstr_t NewName ) {
+    HRESULT _hr = raw_RenameByGuid(guid, NewName);
+    if (FAILED(_hr)) _com_issue_errorex(_hr, this, __uuidof(this));
+    return _hr;
+}

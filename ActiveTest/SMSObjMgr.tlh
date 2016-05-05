@@ -1,0 +1,194 @@
+﻿// Created by Microsoft (R) C/C++ Compiler Version 12.00.40629.0 (611e0920).
+//
+// d:\develop\sources\freelance\build-helloforwadrt-desktop_qt_5_6_0_msvc2013_32bit-debug\debug\SMSObjMgr.tlh
+//
+// C++ source equivalent of Win32 type library 4892F679-C799-439A-828D-3C7592D4D201
+// compiler-generated file created 04/28/16 at 14:23:26 - DO NOT EDIT!
+
+#pragma once
+#pragma pack(push, 8)
+
+#include <comdef.h>
+
+//
+// Forward references and typedefs
+//
+
+struct __declspec(uuid("4892f679-c799-439a-828d-3c7592d4d201"))
+/* LIBID */ __SMSObjMgrLib;
+struct __declspec(uuid("f9a5b577-8050-4373-9bda-bbd9fd07e6ff"))
+/* interface */ ISMSCallBack;
+struct __declspec(uuid("c32f076d-6dc5-4b8d-940b-9c73ecc2c43f"))
+/* dual interface */ ISMSObject;
+struct __declspec(uuid("927b613d-ae72-42c5-bb87-823a23913412"))
+/* dual interface */ ISMSObjectCheck;
+struct /* coclass */ SMSObjectsManager;
+struct __declspec(uuid("e0aa5743-ae70-4452-ade5-f1f0594e5630"))
+/* dual interface */ ISMSObjectsManager;
+struct __declspec(uuid("8e14390e-062a-476c-b0a3-35beb0c8df96"))
+/* dual interface */ IRegistration;
+
+//
+// Smart pointer typedef declarations
+//
+
+_COM_SMARTPTR_TYPEDEF(ISMSCallBack, __uuidof(ISMSCallBack));
+_COM_SMARTPTR_TYPEDEF(ISMSObject, __uuidof(ISMSObject));
+_COM_SMARTPTR_TYPEDEF(ISMSObjectCheck, __uuidof(ISMSObjectCheck));
+_COM_SMARTPTR_TYPEDEF(ISMSObjectsManager, __uuidof(ISMSObjectsManager));
+_COM_SMARTPTR_TYPEDEF(IRegistration, __uuidof(IRegistration));
+
+//
+// Type library items
+//
+
+struct __declspec(uuid("f9a5b577-8050-4373-9bda-bbd9fd07e6ff"))
+ISMSCallBack : IUnknown
+{
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall OnMessageShown (
+        long MsgID ) = 0;
+};
+
+struct __declspec(uuid("c32f076d-6dc5-4b8d-940b-9c73ecc2c43f"))
+ISMSObject : IDispatch
+{
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall SetMessage (
+        /*[in]*/ BSTR Text,
+        /*[in]*/ BSTR Nick,
+        /*[in]*/ long StyleIndex,
+        /*[in]*/ long MsgID ) = 0;
+      virtual HRESULT __stdcall Advise (
+        /*[in]*/ IUnknown * pIUnk ) = 0;
+      virtual HRESULT __stdcall UnAdvise ( ) = 0;
+      virtual HRESULT __stdcall TestMessage (
+        /*[in]*/ BSTR bstrText,
+        /*[in]*/ BSTR bstrNick,
+        /*[in]*/ long lStyleIndex,
+        /*[in]*/ long lMsgID,
+        /*[out,retval]*/ float * pFullness ) = 0;
+      virtual HRESULT __stdcall GetStyleCount (
+        /*[out,retval]*/ long * pStyleCount ) = 0;
+      virtual HRESULT __stdcall SetStyleMessage (
+        /*[in]*/ BSTR bstrNickStyle,
+        /*[in]*/ BSTR bstrNick,
+        /*[in]*/ BSTR bstrTextStyle,
+        /*[in]*/ BSTR bstrText,
+        /*[in]*/ long lMsgID,
+        /*[in]*/ long bNewLine ) = 0;
+};
+
+struct __declspec(uuid("927b613d-ae72-42c5-bb87-823a23913412"))
+ISMSObjectCheck : IDispatch
+{
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall CheckStyleMessage (
+        /*[in]*/ BSTR bstrNickStyle,
+        /*[in]*/ BSTR bstrNick,
+        /*[in]*/ BSTR bstrTextStyle,
+        /*[in]*/ BSTR bstrText,
+        /*[in]*/ long bNewLine,
+        /*[out]*/ float * pfWidthFullness,
+        /*[out]*/ float * pfHeightFullness ) = 0;
+      virtual HRESULT __stdcall CheckMessage (
+        /*[in]*/ BSTR bstrText,
+        /*[in]*/ BSTR bstrNick,
+        /*[in]*/ long lStyleIndex,
+        /*[out]*/ float * pfWidthFullness,
+        /*[out]*/ float * pfHeightFullness ) = 0;
+};
+
+struct __declspec(uuid("915f2249-d3ad-415d-8477-28b51f555cea"))
+SMSObjectsManager;
+    // [ default ] interface ISMSObjectsManager
+    // interface IRegistration
+    // interface ISMSObject
+    // interface ISMSObjectCheck
+
+struct __declspec(uuid("e0aa5743-ae70-4452-ade5-f1f0594e5630"))
+ISMSObjectsManager : IDispatch
+{
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall GetSMSObjectsCount (
+        /*[out,retval]*/ int * pCount ) = 0;
+      virtual HRESULT __stdcall GetSMSObjectName (
+        /*[in]*/ int Index,
+        /*[out,retval]*/ BSTR * pName ) = 0;
+      virtual HRESULT __stdcall GetSMSObjectByIndex (
+        /*[in]*/ int Index,
+        /*[out,retval]*/ IUnknown * * ppIUnk ) = 0;
+      virtual HRESULT __stdcall GetSMSObjectByName (
+        /*[in]*/ BSTR Name,
+        /*[out,retval]*/ IUnknown * * ppIUnk ) = 0;
+      virtual HRESULT __stdcall SetMessage (
+        /*[in]*/ BSTR bstrSMSName,
+        /*[in]*/ BSTR bstrText,
+        /*[in]*/ BSTR bstrNick,
+        /*[in]*/ long lStyleIndex,
+        /*[in]*/ long lMsgID ) = 0;
+      virtual HRESULT __stdcall SetStyleMessageTo (
+        /*[in]*/ BSTR bstrSMSName,
+        /*[in]*/ BSTR bstrNickStyle,
+        /*[in]*/ BSTR bstrNick,
+        /*[in]*/ BSTR bstrTextStyle,
+        /*[in]*/ BSTR bstrText,
+        /*[in]*/ long lMsgID,
+        /*[in]*/ long bNewLine ) = 0;
+};
+
+struct __declspec(uuid("8e14390e-062a-476c-b0a3-35beb0c8df96"))
+IRegistration : IDispatch
+{
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall Register (
+        /*[in]*/ IUnknown * pUnk,
+        /*[in]*/ BSTR Name,
+        /*[out]*/ GUID * pGuid ) = 0;
+      virtual HRESULT __stdcall Unregister (
+        /*[in]*/ BSTR Name ) = 0;
+      virtual HRESULT __stdcall Reregister (
+        /*[in]*/ BSTR OldName,
+        /*[in]*/ BSTR NewName ) = 0;
+      virtual HRESULT __stdcall UnregisterByGuid (
+        GUID guid ) = 0;
+      virtual HRESULT __stdcall RenameByGuid (
+        /*[in]*/ GUID guid,
+        /*[in]*/ BSTR NewName ) = 0;
+};
+
+//
+// Named GUID constants initializations
+//
+
+extern "C" const GUID __declspec(selectany) LIBID_SMSObjMgrLib =
+    {0x4892f679,0xc799,0x439a,{0x82,0x8d,0x3c,0x75,0x92,0xd4,0xd2,0x01}};
+extern "C" const GUID __declspec(selectany) IID_ISMSCallBack =
+    {0xf9a5b577,0x8050,0x4373,{0x9b,0xda,0xbb,0xd9,0xfd,0x07,0xe6,0xff}};
+extern "C" const GUID __declspec(selectany) IID_ISMSObject =
+    {0xc32f076d,0x6dc5,0x4b8d,{0x94,0x0b,0x9c,0x73,0xec,0xc2,0xc4,0x3f}};
+extern "C" const GUID __declspec(selectany) IID_ISMSObjectCheck =
+    {0x927b613d,0xae72,0x42c5,{0xbb,0x87,0x82,0x3a,0x23,0x91,0x34,0x12}};
+extern "C" const GUID __declspec(selectany) CLSID_SMSObjectsManager =
+    {0x915f2249,0xd3ad,0x415d,{0x84,0x77,0x28,0xb5,0x1f,0x55,0x5c,0xea}};
+extern "C" const GUID __declspec(selectany) IID_ISMSObjectsManager =
+    {0xe0aa5743,0xae70,0x4452,{0xad,0xe5,0xf1,0xf0,0x59,0x4e,0x56,0x30}};
+extern "C" const GUID __declspec(selectany) IID_IRegistration =
+    {0x8e14390e,0x062a,0x476c,{0xb0,0xa3,0x35,0xbe,0xb0,0xc8,0xdf,0x96}};
+
+#pragma pack(pop)
