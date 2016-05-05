@@ -11,7 +11,7 @@ CONFIG -= app_bundle
 TEMPLATE = app
 
 SOURCES += main.cpp \
-    CSMSCallback.cpp \
+    #CSMSCallback.cpp \
     NetworkManager.cpp \
     # SMSManager.cpp \
     SMSObjectManager.cpp \
@@ -19,11 +19,12 @@ SOURCES += main.cpp \
 
 HEADERS += \
     pch.h \
-    CSMSCallback.h \
+    #CSMSCallback.h \
     NetworkManager.h \
     # SMSManager.h \
     SMSObjectManager.h \
-    Boss.h
+    Boss.h \
+    SMSCallback.h
 
 RESOURCES += \
     qml.qrc

@@ -8,7 +8,7 @@
 #include <QTimer>
 
 //#include <CSMSCallback.h>
-#include "smscallback.h"
+//#include "smscallback.h"
 
 class SMSObjectManager : public QObject
 {
@@ -38,11 +38,14 @@ private:
   bool initSmsCallback();
   void showSmsObjects(); //just info
 
+  void updateSMSObject(const IUnknownPtr& iUnknown);
   void resetSMSObject();
+  void resetCallback();
 
 private:
   ISMSObjectsManagerPtr iSMSObjectManager_;
-  ISMSCallBackPtr iSMSCallBack_;
+  //CComObject <CSMSCallBack>* iSMSCallBack_;
+  class CSMSCallBack* iSMSCallBack_;
 
   ISMSObjectPtr iSMSObject_;
   QTimer* titleMonitorTimer_;

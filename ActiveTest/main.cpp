@@ -13,46 +13,6 @@ int main(int argc, char *argv[])
 
   Boss boss;
 
-  //    BSTR name1;
-  //    BSTR name2;
-  //    hr = smsObjectManager->GetSMSObjectName(0, &name1);
-  //    if (!FAILED(hr))
-  //    {
-  //      qDebug() << "saved sms object name" << 0;
-  //    }
-  //    hr = smsObjectManager->GetSMSObjectName(1, &name2);
-  //    if (!FAILED(hr))
-  //    {
-  //      qDebug() << "saved sms object name" << 1;
-  //    }
-
-  //    ISMSObjectPtr smsObject;
-  //    smsObject = iUnknown;
-  //    if (smsObject == NULL)
-  //    {
-  //      qDebug() << "failed smsObject";
-  //    }
-  //    else
-  //    {
-  //      qDebug() << "succes smsObject";
-  //    }
-
-  //    QString qMessage = "ляляляляля лялял ляляля";
-  //    BSTR message = SysAllocString(reinterpret_cast<const OLECHAR*>(qMessage.utf16()));
-
-  //    hr = smsObject->SetMessage(message, name, 0, 0);
-  //    if (FAILED(hr))
-  //    {
-  //      qDebug() << "failed send message";
-  //    }
-  //    else
-  //    {
-  //      qDebug() << "succes send message";
-  //    }
-
-  //    SysFreeString(name);
-  //    SysFreeString(message);
-
   return a.exec();
 
 //    QGuiApplication app(argc, argv);
