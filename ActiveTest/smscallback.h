@@ -62,17 +62,23 @@ MIDL_DEFINE_GUID(CLSID, CLSID_SMSCallBack,0xD2485CC4,0xA286,0x45AC,0x8A,0xEC,0x2
 }
 
 typedef class SMSCallBack SMSCallBack;
+CComModule _Module;
+#define _pAtlModule _Module;
 
-class CSMSCallBack : public CComObjectRootEx<CComMultiThreadModel>,
+class ATL_NO_VTABLE CSMSCallBack :
+    public CComObjectRootEx<CComMultiThreadModel>,
     public CComCoClass<CSMSCallBack, &CLSID_SMSCallBack>,
-    public IDispatchImpl<ISMSCallBack, &IID_ISMSCallBack, &LIBID_SMSObjMgrLib, /*wMajor =*/ 1, /*wMinor =*/ 0>
+    public IDispatchImpl<ISMSCallBack, &IID_ISMSCallBack, &LIBID_SMSObjMgrLib>
 {
 public:
   CSMSCallBack()
     : m_pUnkMarshaler(NULL)
-  {}
+  {
+    qDebug() << "created sms callback";
+  }
 
   DECLARE_REGISTRY_RESOURCEID(101/*IDR_SMSCALLBACK*/)
+
   DECLARE_NOT_AGGREGATABLE(CSMSCallBack)
 
   BEGIN_COM_MAP(CSMSCallBack)
@@ -81,21 +87,30 @@ public:
   END_COM_MAP()
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
+  //Protects your object from being deleted if (during FinalConstruct)
+  //the internal aggregated object increments the reference count then decrements the count to 0.
   DECLARE_GET_CONTROLLING_UNKNOWN()
+  //Add this macro to your object if you get the compiler error message that GetControllingUnknown is undefined
 
   HRESULT FinalConstruct()
   {
+    qDebug() << "final construct";
     return CoCreateFreeThreadedMarshaler(GetControllingUnknown(), &m_pUnkMarshaler.p);
+    //IUnknown* GetControllingUnknown( );
+    //The CoCreateFreeThreadedMarshaler function enables an object
+    //to efficiently marshal interface pointers between threads in the same process.
   }
 
   void FinalRelease()
   {
+    qDebug() << "final release";
     m_pUnkMarshaler.Release();
   }
 
   STDMETHOD(OnMessageShown)(long nMsgID)
   {
     Q_UNUSED(nMsgID);
+    qDebug() << "on message shown" << nMsgID;
     return S_OK;
   }
 
@@ -104,5 +119,18 @@ public:
 };
 
 OBJECT_ENTRY_NON_CREATEABLE_EX_AUTO(__uuidof(SMSCallBack), CSMSCallBack)
+/*
+You use the OBJECT_ENTRY_NON_CREATEABLE_EX_AUTO macro to specify a class
+that does not have an associated class object.
+Often these are non-top-level objects in an object model.
+Clients typically must call a method on a higher-level object
+in the object hierarchy to obtain an instance of this class.
+Because the specified class does not have an associated class object
+, clients cannot create an instance by calling CoCreateInstance.
 
+You use the OBJECT_ENTRY_NON_CREATEABLE_EX_AUTO macro primarily for
+noncreateable classes that need class-level initialization and uninitialization.
+Occasionally, you might want to have a noncreateable class maintain Registry entries
+, possibly persistent class configuration information and component categories.
+*/
 #endif // SMSCALLBACK_H

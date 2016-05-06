@@ -199,7 +199,6 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
     return;
   }
 
-  //iSMSCallBack_ = static_cast<ISMSCallBack*>(new CSMSCallback());
   iSMSCallBack_->AddRef();
 
   IUnknownPtr spIUnk = NULL;
