@@ -14,6 +14,7 @@ Boss::Boss(QObject *parent)
 
   QObject::connect(smsObject_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
   QObject::connect(smsObject_, SIGNAL(messageSet()), this, SLOT(onMessageSet()));
+  QObject::connect(smsObject_, SIGNAL(messageDone()), this, SLOT(onMessageDone()));
   smsObject_->start();
 }
 
@@ -30,10 +31,8 @@ void Boss::onTitleCheck(bool isTitleAlive)
     {
       //TODO send confirmation to server 1 time
       //server send empty xml
-      onEmptyXml();
       isConfirmed_ = true;
     }
-
   }
   else
   {
@@ -47,13 +46,17 @@ void Boss::onMessageSet()
 {
   //TODO send message confirmation to server
   qDebug() << "=== on message set ===";
-  onMessageReceived();
+}
+
+void Boss::onMessageDone()
+{
+  //TODO message request
+  qDebug() << "=== on message done ===";
 }
 
 void Boss::onEmptyXml()
 {
   //TODO message request
-  onMessageReceived();
 }
 
 void Boss::onEmptyMessageXml()

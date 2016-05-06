@@ -16,6 +16,7 @@ private slots:
   //from sms
   void onTitleCheck(bool isTitleAlive);
   void onMessageSet();
+  void onMessageDone();
 
   //from server
   void onEmptyXml();
