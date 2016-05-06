@@ -24,6 +24,7 @@ private slots:
 
 private:
   class SMSObjectManager* smsObject_;
+  bool isConfirmed_;
 };
 
 #endif // BOSS_H

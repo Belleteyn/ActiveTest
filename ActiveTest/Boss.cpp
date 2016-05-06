@@ -7,6 +7,7 @@
 Boss::Boss(QObject *parent)
   : QObject(parent)
   , smsObject_(new SMSObjectManager(parent))
+  , isConfirmed_(false)
 {
   if (!smsObject_->init())
     return;
@@ -25,14 +26,19 @@ void Boss::onTitleCheck(bool isTitleAlive)
 {
   if (isTitleAlive)
   {
-    qDebug() << "title is alive";
-    //TODO send confirmation to server 1 time
+    if (!isConfirmed_)
+    {
+      //TODO send confirmation to server 1 time
+      //server send empty xml
+      onEmptyXml();
+      isConfirmed_ = true;
+    }
 
-    onMessageReceived();
   }
   else
   {
-    qDebug() << "title id dead";
+    qDebug() << "title is dead";
+    isConfirmed_ = false;
     //TODO ???
   }
 }
@@ -41,11 +47,13 @@ void Boss::onMessageSet()
 {
   //TODO send message confirmation to server
   qDebug() << "=== on message set ===";
+  onMessageReceived();
 }
 
 void Boss::onEmptyXml()
 {
   //TODO message request
+  onMessageReceived();
 }
 
 void Boss::onEmptyMessageXml()
@@ -57,7 +65,7 @@ void Boss::onMessageReceived()
 {
   if (smsObject_)
   {
-    smsObject_->setMessage(0, "message", 0, 0, QTime::currentTime());
+    smsObject_->setMessage(0, "long long long long long loooooooooooooooooooong meeeeeeeeeeeeeeeeeeeeeeessage meeeeeeeeeeeeeeeeeeeeeeessage meeeeeeeeeeeeeeeeeeeeeeessage", 0, 0, QTime::currentTime());
   }
   else
   {
