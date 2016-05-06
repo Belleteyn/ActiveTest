@@ -17,6 +17,7 @@ private slots:
   void onTitleCheck(bool isTitleAlive);
   void onMessageSet();
   void onMessageDone();
+  void onMessageFailed();
 
   //from server
   void onEmptyXml();
@@ -26,6 +27,9 @@ private slots:
 private:
   class SMSObjectManager* smsObject_;
   bool isConfirmed_;
+
+  int messageIdCounter_;
+  QByteArray savedMessage_;
 };
 
 #endif // BOSS_H

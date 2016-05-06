@@ -8,6 +8,7 @@ Boss::Boss(QObject *parent)
   : QObject(parent)
   , smsObject_(new SMSObjectManager(parent))
   , isConfirmed_(false)
+  , messageIdCounter_(0)
 {
   if (!smsObject_->init())
     return;
@@ -15,6 +16,7 @@ Boss::Boss(QObject *parent)
   QObject::connect(smsObject_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
   QObject::connect(smsObject_, SIGNAL(messageSet()), this, SLOT(onMessageSet()));
   QObject::connect(smsObject_, SIGNAL(messageDone()), this, SLOT(onMessageDone()));
+  QObject::connect(smsObject_, SIGNAL(messageFailed()), this, SLOT(onMessageFailed()));
   smsObject_->start();
 }
 
@@ -29,9 +31,19 @@ void Boss::onTitleCheck(bool isTitleAlive)
   {
     if (!isConfirmed_)
     {
+      isConfirmed_ = true;
+
+      if (!savedMessage_.isEmpty())
+      {
+        qWarning() << "last message was not shown, show it first";
+        smsObject_->setMessage(messageIdCounter_, savedMessage_, 0, 0, QTime::currentTime());
+        savedMessage_.clear();
+      }
+
       //TODO send confirmation to server 1 time
       //server send empty xml
-      isConfirmed_ = true;
+
+      onMessageReceived();
     }
   }
   else
@@ -52,6 +64,15 @@ void Boss::onMessageDone()
 {
   //TODO message request
   qDebug() << "=== on message done ===";
+  savedMessage_.clear();
+
+  onMessageReceived();
+}
+
+void Boss::onMessageFailed()
+{
+  qWarning() << "failed to set message, try again";
+  //TODO try to set first from saved queue
 }
 
 void Boss::onEmptyXml()
@@ -68,7 +89,9 @@ void Boss::onMessageReceived()
 {
   if (smsObject_)
   {
-    smsObject_->setMessage(0, "long long long long long loooooooooooooooooooong meeeeeeeeeeeeeeeeeeeeeeessage meeeeeeeeeeeeeeeeeeeeeeessage meeeeeeeeeeeeeeeeeeeeeeessage", 0, 0, QTime::currentTime());
+    messageIdCounter_++;
+    savedMessage_ = QString::number(messageIdCounter_).toLocal8Bit();
+    smsObject_->setMessage(messageIdCounter_, "Лекции по многопоточному программированию на С/С++ от Техносферы.", 0, 0, QTime::currentTime());
   }
   else
   {
