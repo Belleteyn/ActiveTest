@@ -235,6 +235,10 @@ void SMSObjectManager::resetSMSObject()
     iSMSObject_->Release();
     iSMSObject_ = NULL;
   }
+
+  titleCheck(iSMSObject_ != NULL);
+  //reset server confirmation
+  //maybe it is not necessary
 }
 
 void SMSObjectManager::resetCallback()
