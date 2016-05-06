@@ -113,11 +113,11 @@ void SMSObjectManager::setMessage(int id, const QByteArray &message, int priorit
     BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
     BSTR bInfo = SysAllocString(reinterpret_cast<const OLECHAR*>(messageInfo.utf16()));
 
-    HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, id % 7, id);
+    HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, 0, id);
     if (FAILED(hr))
     {
       qDebug() << "failed send message";
-      //TODO error handling
+      messageFailed();
     }
     else
     {

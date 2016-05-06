@@ -24,6 +24,7 @@ public:
 signals:
   void titleCheck(bool isTitleAlive);
   void messageSet();
+  void messageFailed();
   void messageDone();
 
 private slots:
