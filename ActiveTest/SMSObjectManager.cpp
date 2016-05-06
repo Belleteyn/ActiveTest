@@ -97,7 +97,7 @@ void SMSObjectManager::start()
   titleMonitorTimer_->start(1000);
 }
 
-void SMSObjectManager::setMessage(int id, const QString message, int priority, int sender
+void SMSObjectManager::setMessage(int id, const QByteArray &message, int priority, int sender
                                   , const QTime &receiveTime)
 {
   Q_UNUSED(priority);
@@ -110,10 +110,10 @@ void SMSObjectManager::setMessage(int id, const QString message, int priority, i
                                   + "; sender = " + QString::number(sender)
                                   + "; time = " + receiveTime.toString("h:mm:ss"));
 
-    BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(message.utf16()));
+    BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
     BSTR bInfo = SysAllocString(reinterpret_cast<const OLECHAR*>(messageInfo.utf16()));
 
-    HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, 0, id);
+    HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, id % 7, id);
     if (FAILED(hr))
     {
       qDebug() << "failed send message";
@@ -174,6 +174,10 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
     qWarning() << "tried to set sms object to NULL";
     return;
   }
+
+  LONG styleCount;
+  iSMSObject_->GetStyleCount(&styleCount);
+  qDebug() << styleCount << "styles";
 
   HRESULT hr = CComObject<CSMSCallBack>::CreateInstance
       (reinterpret_cast<CComObject<CSMSCallBack>**>(&iSMSCallBack_));

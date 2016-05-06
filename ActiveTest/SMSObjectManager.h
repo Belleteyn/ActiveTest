@@ -18,7 +18,7 @@ public:
   void start();
   //
 
-  void setMessage(int id, const QString message, int priority, int sender
+  void setMessage(int id, const QByteArray& message, int priority, int sender
                   , const QTime& receiveTime);
 
 signals:
