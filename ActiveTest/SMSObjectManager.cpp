@@ -69,21 +69,6 @@ bool SMSObjectManager::initSmsObjectManager()
   return false;
 }
 
-bool SMSObjectManager::initSmsCallback()
-{
-//  IUnknown* pIUnknown = static_cast<ISMSCallBack*>(new CSMSCallBack);
-//  HRESULT hr = pIUnknown->QueryInterface(IID_ISMSCallBack,(void**)&iSMSCallBack_);
-//  if (!FAILED(hr))
-//  {
-//    qDebug() << "succes smsCallback";
-//    iSMSCallBack_->AddRef();
-//    return true;
-//  }
-
-  qDebug() << "failed smsCallback";
-  return false;
-}
-
 void SMSObjectManager::showSmsObjects()
 {
   INT nObjectsCount = 0;
@@ -190,7 +175,8 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
     return;
   }
 
-  HRESULT hr = CComObject<CSMSCallBack>::CreateInstance(reinterpret_cast<CComObject<CSMSCallBack>**>(&iSMSCallBack_));
+  HRESULT hr = CComObject<CSMSCallBack>::CreateInstance
+      (reinterpret_cast<CComObject<CSMSCallBack>**>(&iSMSCallBack_));
   if (FAILED(hr))
   {
     qDebug() << "failed create smsCallback";
@@ -223,6 +209,12 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
   {
     qDebug() << "WOW! Such advise! Much callback!";
   }
+
+  iSMSCallBack_->setCallback([this](long id)
+  {
+    qDebug() << "done message" << id;
+    messageDone();
+  });
 }
 
 void SMSObjectManager::resetSMSObject()

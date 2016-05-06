@@ -1,6 +1,8 @@
 #ifndef SMSCALLBACK_H
 #define SMSCALLBACK_H
 
+#include <functional>
+
 #include <atlbase.h>
 #include <atlcom.h>
 #include "SMSObjMgr.tlh"
@@ -107,15 +109,18 @@ public:
     m_pUnkMarshaler.Release();
   }
 
+  inline void setCallback(const std::function<void(long)>& func) { callback_ = func; };
+
   STDMETHOD(OnMessageShown)(long nMsgID)
   {
-    Q_UNUSED(nMsgID);
     qDebug() << "on message shown" << nMsgID;
+    callback_(nMsgID);
     return S_OK;
   }
 
 public:
   CComPtr<IUnknown> m_pUnkMarshaler;
+  std::function<void(long)> callback_;
 };
 
 OBJECT_ENTRY_NON_CREATEABLE_EX_AUTO(__uuidof(SMSCallBack), CSMSCallBack)

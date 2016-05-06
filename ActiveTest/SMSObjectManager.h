@@ -2,13 +2,8 @@
 #define SMSOBJECTMANAGER_H
 
 #include "SMSObjMgr.tlh"
-#include <QVector>
 #include <QObject>
-#include <QJSValue>
 #include <QTimer>
-
-//#include <CSMSCallback.h>
-//#include "smscallback.h"
 
 class SMSObjectManager : public QObject
 {
@@ -29,13 +24,13 @@ public:
 signals:
   void titleCheck(bool isTitleAlive);
   void messageSet();
+  void messageDone();
 
 private slots:
   void onTitleMonitorTimer();
 
 private:
   bool initSmsObjectManager();
-  bool initSmsCallback();
   void showSmsObjects(); //just info
 
   void updateSMSObject(const IUnknownPtr& iUnknown);
@@ -44,7 +39,6 @@ private:
 
 private:
   ISMSObjectsManagerPtr iSMSObjectManager_;
-  //CComObject <CSMSCallBack>* iSMSCallBack_;
   class CSMSCallBack* iSMSCallBack_;
 
   ISMSObjectPtr iSMSObject_;
