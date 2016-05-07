@@ -77,22 +77,16 @@ void SMSObjectManager::start()
   titleMonitorTimer_->start(1000);
 }
 
-void SMSObjectManager::setMessage(int id, const QByteArray &message, int priority, int sender
-                                  , const QTime &receiveTime)
+void SMSObjectManager::setMessage(int id, const QByteArray &message, int priority)
 {
-  Q_UNUSED(priority);
-  Q_UNUSED(sender);
-  Q_UNUSED(receiveTime);
-
   if (iSMSObject_)
   {
-    QString messageInfo = QString("id = " + QString::number(id)
-                                  + "; time = " + receiveTime.toString("h:mm:ss"));
+    QString messageInfo = QString("id = " + QString::number(id));
 
     BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
     BSTR bInfo = SysAllocString(reinterpret_cast<const OLECHAR*>(messageInfo.utf16()));
 
-    HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, 0, id);
+    HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, priority, id);
     if (FAILED(hr))
     {
       qDebug() << "failed set message" << id;

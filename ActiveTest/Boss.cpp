@@ -130,7 +130,7 @@ void Boss::showNextMessage() const
   MessageInfo message = unshownMessages_->first();
   if (message.id != -1)
   {
-    smsObjectManager_->setMessage(message.id, message.text, message.priority, message.senderNum, message.receiveTime);
+    smsObjectManager_->setMessage(message.id, message.text, message.priority);
 
     QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
     bool isMobileUsing = settings.value("Mobile/use").toBool();
