@@ -1,6 +1,8 @@
 #include "Boss.h"
 
 #include <QTime>
+#include <QSettings>
+#include <QGuiApplication>
 
 #include <SMSObjectManager.h>
 #include <MessageHolder.h>
@@ -129,6 +131,14 @@ void Boss::showNextMessage() const
   if (message.id != -1)
   {
     smsObjectManager_->setMessage(message.id, message.text, message.priority, message.senderNum, message.receiveTime);
+
+    QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
+    bool isMobileUsing = settings.value("Mobile/use").toBool();
+    if (isMobileUsing)
+    {
+      qDebug() << "mobile app is using";
+      //TODO send to mobile app
+    }
   }
   else
   {
