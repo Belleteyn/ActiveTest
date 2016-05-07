@@ -75,9 +75,7 @@ class ATL_NO_VTABLE CSMSCallBack :
 public:
   CSMSCallBack()
     : m_pUnkMarshaler(NULL)
-  {
-    qDebug() << "created sms callback";
-  }
+  {}
 
   DECLARE_REGISTRY_RESOURCEID(101/*IDR_SMSCALLBACK*/)
 
@@ -96,7 +94,6 @@ public:
 
   HRESULT FinalConstruct()
   {
-    qDebug() << "final construct";
     return CoCreateFreeThreadedMarshaler(GetControllingUnknown(), &m_pUnkMarshaler.p);
     //IUnknown* GetControllingUnknown( );
     //The CoCreateFreeThreadedMarshaler function enables an object
@@ -105,7 +102,6 @@ public:
 
   void FinalRelease()
   {
-    qDebug() << "final release";
     m_pUnkMarshaler.Release();
   }
 
@@ -113,7 +109,6 @@ public:
 
   STDMETHOD(OnMessageShown)(long nMsgID)
   {
-    qDebug() << "on message shown" << nMsgID;
     callback_(nMsgID);
     return S_OK;
   }

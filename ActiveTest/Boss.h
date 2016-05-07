@@ -6,9 +6,12 @@
 class Boss : public QObject
 {
   Q_OBJECT
+
 public:
   explicit Boss(QObject *parent = 0);
   ~Boss();
+
+  bool init();
 
 signals:
 
@@ -25,11 +28,14 @@ private slots:
   void onMessageReceived();
 
 private:
-  class SMSObjectManager* smsObject_;
+  void showNextMessage() const;
+
+private:
+  class SMSObjectManager* smsObjectManager_;
   bool isConfirmed_;
 
+  class MessageHolder* unshownMessages_;
   int messageIdCounter_;
-  QByteArray savedMessage_;
 };
 
 #endif // BOSS_H

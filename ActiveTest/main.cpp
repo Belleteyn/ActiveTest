@@ -12,8 +12,12 @@ int main(int argc, char *argv[])
   QGuiApplication a(argc, argv);
 
   Boss boss;
+  if (boss.init())
+  {
+    return a.exec();
+  }
 
-  return a.exec();
+  return a.quit();
 
 //    QGuiApplication app(argc, argv);
 

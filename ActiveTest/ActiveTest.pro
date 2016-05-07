@@ -15,7 +15,8 @@ SOURCES += main.cpp \
     NetworkManager.cpp \
     # SMSManager.cpp \
     SMSObjectManager.cpp \
-    Boss.cpp
+    Boss.cpp \
+    MessageHolder.cpp
 
 HEADERS += \
     pch.h \
@@ -24,7 +25,8 @@ HEADERS += \
     # SMSManager.h \
     SMSObjectManager.h \
     Boss.h \
-    SMSCallback.h
+    SMSCallback.h \
+    MessageHolder.h
 
 RESOURCES += \
     qml.qrc

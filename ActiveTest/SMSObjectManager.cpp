@@ -13,26 +13,6 @@ SMSObjectManager::SMSObjectManager(QObject *parent)
   , iSMSObject_(NULL)
   , titleMonitorTimer_(nullptr)
 {
-//  iSMSCallBack_ = ISMSCallBackPtr(new CSMSCallback());
-//  if (iSMSCallBack_)
-//  {
-//      qDebug() << "succes CreateInstance smsCallback";
-//  }
-//  else
-//  {
-//      qDebug() << "failed CreateInstance smsCallback";
-//  }
-//
-//  hr = pIUnknown->QueryInterface(IID_ISMSCallBack,(void**)&iSMSCallBack_);
-//  if (FAILED(hr))
-//  {
-//      qDebug() << "failed smsCallback";
-//  }
-//  else
-//  {
-//      qDebug() << "succes smsCallback";
-//      iSMSCallBack_->AddRef();
-//  }
 }
 
 SMSObjectManager::~SMSObjectManager()
@@ -106,8 +86,7 @@ void SMSObjectManager::setMessage(int id, const QByteArray &message, int priorit
 
   if (iSMSObject_)
   {
-    QString messageInfo = QString("prior = " + QString::number(priority)
-                                  + "; sender = " + QString::number(sender)
+    QString messageInfo = QString("id = " + QString::number(id)
                                   + "; time = " + receiveTime.toString("h:mm:ss"));
 
     BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
@@ -116,12 +95,12 @@ void SMSObjectManager::setMessage(int id, const QByteArray &message, int priorit
     HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, 0, id);
     if (FAILED(hr))
     {
-      qDebug() << "failed send message";
+      qDebug() << "failed set message" << id;
       messageFailed();
     }
     else
     {
-      qDebug() << "succes send message";
+      qDebug() << "succes set message" << id;
       messageSet();
     }
 
@@ -131,7 +110,7 @@ void SMSObjectManager::setMessage(int id, const QByteArray &message, int priorit
   else
   {
     qWarning() << "error showing message: no sms object";
-    //TODO error handling
+    //that message will be shown after iSMSObject was fixed. do nothing.
   }
 }
 

@@ -3,26 +3,53 @@
 #include <QTime>
 
 #include <SMSObjectManager.h>
+#include <MessageHolder.h>
 
 Boss::Boss(QObject *parent)
   : QObject(parent)
-  , smsObject_(new SMSObjectManager(parent))
+  , smsObjectManager_(nullptr)
   , isConfirmed_(false)
+  , unshownMessages_(nullptr)
   , messageIdCounter_(0)
-{
-  if (!smsObject_->init())
-    return;
-
-  QObject::connect(smsObject_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
-  QObject::connect(smsObject_, SIGNAL(messageSet()), this, SLOT(onMessageSet()));
-  QObject::connect(smsObject_, SIGNAL(messageDone()), this, SLOT(onMessageDone()));
-  QObject::connect(smsObject_, SIGNAL(messageFailed()), this, SLOT(onMessageFailed()));
-  smsObject_->start();
-}
+{}
 
 Boss::~Boss()
 {
   //sms object removes by parent
+
+  if (unshownMessages_)
+  {
+    delete unshownMessages_;
+    unshownMessages_ = nullptr;
+  }
+}
+
+bool Boss::init()
+{
+  try
+  {
+    unshownMessages_ = new MessageHolder();
+    smsObjectManager_ = new SMSObjectManager(this);
+  }
+  catch (std::bad_alloc&)
+  {
+    qWarning() << "Fatal error: unable to create SMSObjectManager or MessageHolder;";
+    return false;
+  }
+
+  if (!smsObjectManager_->init())
+  {
+    qWarning() << "Fatal error: unable to init SMSObjectManager;";
+    return false;
+  }
+
+  QObject::connect(smsObjectManager_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
+  QObject::connect(smsObjectManager_, SIGNAL(messageSet()), this, SLOT(onMessageSet()));
+  QObject::connect(smsObjectManager_, SIGNAL(messageDone()), this, SLOT(onMessageDone()));
+  QObject::connect(smsObjectManager_, SIGNAL(messageFailed()), this, SLOT(onMessageFailed()));
+  smsObjectManager_->start();
+
+  return true;
 }
 
 void Boss::onTitleCheck(bool isTitleAlive)
@@ -33,51 +60,55 @@ void Boss::onTitleCheck(bool isTitleAlive)
     {
       isConfirmed_ = true;
 
-      if (!savedMessage_.isEmpty())
-      {
-        qWarning() << "last message was not shown, show it first";
-        smsObject_->setMessage(messageIdCounter_, savedMessage_, 0, 0, QTime::currentTime());
-        savedMessage_.clear();
-      }
-
       //TODO send confirmation to server 1 time
       //server send empty xml
-
-      onMessageReceived();
+      onEmptyXml();
     }
   }
   else
   {
     qDebug() << "title is dead";
     isConfirmed_ = false;
-    //TODO ???
   }
 }
 
 void Boss::onMessageSet()
 {
   //TODO send message confirmation to server
-  qDebug() << "=== on message set ===";
 }
 
 void Boss::onMessageDone()
 {
-  //TODO message request
-  qDebug() << "=== on message done ===";
-  savedMessage_.clear();
-
-  onMessageReceived();
+  unshownMessages_->dequeue();
+  if (!unshownMessages_->isEmpty())
+  {
+    showNextMessage();
+  }
+  else
+  {
+    //TODO message request
+    onMessageReceived();
+  }
 }
 
 void Boss::onMessageFailed()
 {
   qWarning() << "failed to set message, try again";
-  //TODO try to set first from saved queue
+  showNextMessage();
 }
 
 void Boss::onEmptyXml()
 {
-  //TODO message request
+  if (!unshownMessages_->isEmpty())
+  {
+    qWarning() << "some messages was not shown, show them first";
+    showNextMessage();
+  }
+  else
+  {
+    //TODO message request
+    onMessageReceived();
+  }
 }
 
 void Boss::onEmptyMessageXml()
@@ -87,15 +118,22 @@ void Boss::onEmptyMessageXml()
 
 void Boss::onMessageReceived()
 {
-  if (smsObject_)
+  messageIdCounter_++;
+  unshownMessages_->add(messageIdCounter_, "Лекции по многопоточному программированию на С/С++ от Техносферы.", QTime::currentTime());
+  showNextMessage();
+}
+
+void Boss::showNextMessage() const
+{
+  MessageInfo message = unshownMessages_->first();
+  if (message.id != -1)
   {
-    messageIdCounter_++;
-    savedMessage_ = QString::number(messageIdCounter_).toLocal8Bit();
-    smsObject_->setMessage(messageIdCounter_, "Лекции по многопоточному программированию на С/С++ от Техносферы.", 0, 0, QTime::currentTime());
+    smsObjectManager_->setMessage(message.id, message.text, message.priority, message.senderNum, message.receiveTime);
   }
   else
   {
-    qWarning() << "no sms object manager";
-    //TODO error handle
+    qWarning() << "invalid message id (message queue is empty)";
+    //this means that message queue is empty
+    //TODO request message
   }
 }
