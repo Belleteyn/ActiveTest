@@ -25,7 +25,8 @@ private slots:
   //from server
   void onEmptyXml();
   void onEmptyMessageXml();
-  void onMessageReceived(long id, const QByteArray& message, const QTime& time);
+  void onUserMessageReceived(long id, const QByteArray& message, const QTime& time, int priority);
+  void onServiceMessageReceived(long id, const QByteArray& message, const QTime& time);
 
 private:
   void showNextMessage() const;

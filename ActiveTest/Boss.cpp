@@ -18,8 +18,8 @@ Boss::Boss(QObject *parent)
 {
   QObject::connect(serverTest_, SIGNAL(emptyXml()), this, SLOT(onEmptyXml()));
   QObject::connect(serverTest_, SIGNAL(emptyMessageXml()), this, SLOT(onEmptyMessageXml()));
-  QObject::connect(serverTest_, &ServerTest::serviceMessage, this, &Boss::onMessageReceived);
-  QObject::connect(serverTest_, &ServerTest::userMessage, this, &Boss::onMessageReceived);
+  QObject::connect(serverTest_, &ServerTest::serviceMessage, this, &Boss::onServiceMessageReceived);
+  QObject::connect(serverTest_, &ServerTest::userMessage, this, &Boss::onUserMessageReceived);
 }
 
 Boss::~Boss()
@@ -127,7 +127,13 @@ void Boss::onEmptyMessageXml()
   serverTest_->serviceMessageRequest();
 }
 
-void Boss::onMessageReceived(long id, const QByteArray& message, const QTime &time)
+void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, int priority)
+{
+  unshownMessages_->add(id, message, time, priority);
+  showNextMessage();
+}
+
+void Boss::onServiceMessageReceived(long id, const QByteArray &message, const QTime &time)
 {
   unshownMessages_->add(id, message, time);
   showNextMessage();
