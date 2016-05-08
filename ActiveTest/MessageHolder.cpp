@@ -40,11 +40,5 @@ bool MessageHolder::isEmpty() const
 
 const MessageInfo& MessageHolder::first() const
 {
-  if (!messageQueue_.empty())
-  {
-    return messageQueue_.first();
-  }
-
-  qWarning() << "ERROR dequeue message. Something went wrong";
-  return MessageInfo();
+  return messageQueue_.first();
 }
