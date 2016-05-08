@@ -14,13 +14,12 @@ Boss::Boss(QObject *parent)
   , smsObjectManager_(nullptr)
   , isConfirmed_(false)
   , unshownMessages_(nullptr)
-  , messageIdCounter_(0)
   , serverTest_(new ServerTest(parent))
 {
   QObject::connect(serverTest_, SIGNAL(emptyXml()), this, SLOT(onEmptyXml()));
   QObject::connect(serverTest_, SIGNAL(emptyMessageXml()), this, SLOT(onEmptyMessageXml()));
-  QObject::connect(serverTest_, SIGNAL(serviceMessage()), this, SLOT(onMessageReceived()));
-  QObject::connect(serverTest_, SIGNAL(userMessage()), this, SLOT(onMessageReceived()));
+  QObject::connect(serverTest_, &ServerTest::serviceMessage, this, &Boss::onMessageReceived);
+  QObject::connect(serverTest_, &ServerTest::userMessage, this, &Boss::onMessageReceived);
 }
 
 Boss::~Boss()
@@ -128,10 +127,9 @@ void Boss::onEmptyMessageXml()
   serverTest_->serviceMessageRequest();
 }
 
-void Boss::onMessageReceived()
+void Boss::onMessageReceived(long id, const QByteArray& message, const QTime &time)
 {
-  messageIdCounter_++;
-  unshownMessages_->add(messageIdCounter_, "Лекции по многопоточному программированию на С/С++ от Техносферы.", QTime::currentTime());
+  unshownMessages_->add(id, message, time);
   showNextMessage();
 }
 

@@ -25,7 +25,7 @@ private slots:
   //from server
   void onEmptyXml();
   void onEmptyMessageXml();
-  void onMessageReceived();
+  void onMessageReceived(long id, const QByteArray& message, const QTime& time);
 
 private:
   void showNextMessage() const;
@@ -35,7 +35,6 @@ private:
   bool isConfirmed_;
 
   class MessageHolder* unshownMessages_;
-  int messageIdCounter_;
 
   class ServerTest* serverTest_;
 };

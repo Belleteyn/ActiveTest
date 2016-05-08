@@ -2,6 +2,7 @@
 #define SERVERTEST_H
 
 #include <QObject>
+#include <QTime>
 
 class ServerTest : public QObject
 {
@@ -13,14 +14,17 @@ public:
 
   void emptyXmlRequest() { emptyXml(); }
   void messageSetConfirm() {}
-  void userMessageRequest() { userMessage(); }
-  void serviceMessageRequest() { serviceMessage(); }
+  void userMessageRequest();
+  void serviceMessageRequest();
 
 signals:
   void emptyXml();
   void emptyMessageXml();
-  void serviceMessage();
-  void userMessage();
+  void serviceMessage(long id, const QByteArray& message, const QTime& time);
+  void userMessage(long id, const QByteArray& message, const QTime& time);
+
+private:
+  int messageIdCounter_;
 };
 
 #endif // SERVERTEST_H
