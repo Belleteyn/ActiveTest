@@ -27,9 +27,11 @@ private:
   bool randomBool();
   long randomId();
   int randomPrior();
+  QByteArray randomMessage();
 
 private:
   int messageIdCounter_;
+  QMap<qint64, QByteArray> messageMap_;
 };
 
 #endif // SERVERTEST_H

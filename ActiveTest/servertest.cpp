@@ -1,12 +1,38 @@
 #include "servertest.h"
 
+#include <QFile>
 #include <random>
+
+#include <QGuiApplication>
 
 ServerTest::ServerTest(QObject *parent)
   : QObject(parent)
   , messageIdCounter_(0)
 {
+  qint64 messageNum = 1;
+  messageMap_.insert(0, "Save the world!");
 
+  QFile file(QGuiApplication::applicationDirPath() + "/the war of the worlds.xml");
+  if (file.open(QIODevice::ReadOnly))
+  {
+    QByteArray data = file.readLine();
+    while (data.size() != 0)
+    {
+      if(data.left(3) == "<p>")
+      {
+        data = data.mid(3, data.length() - 3 - 4);
+
+        messageNum++;
+        messageMap_.insert(messageNum, data);
+      }
+      data = file.readLine();
+    }
+    file.close();
+  }
+  else
+  {
+    qDebug() << "cant open file";
+  }
 }
 
 void ServerTest::userMessageRequest()
@@ -15,7 +41,8 @@ void ServerTest::userMessageRequest()
 
   if (randomBool()) //have user messages
   {
-    userMessage(randomId(), "user message", QTime::currentTime(), randomPrior());
+    QByteArray message = randomMessage();
+    userMessage(randomId(), message, QTime::currentTime(), randomPrior());
   }
   else
   {
@@ -71,5 +98,20 @@ int ServerTest::randomPrior()
 
     qDebug() << "bad priority" << prior;
     return prior;
+    }
+}
+
+QByteArray ServerTest::randomMessage()
+{
+  qint64 id = rand() % messageMap_.size();
+  qDebug() << "get message" << id << "from" << messageMap_.size();
+  if (id < messageMap_.size() && id >= 0 && !messageMap_.empty())
+  {
+    return messageMap_[id];
+  }
+  else
+  {
+    qWarning() << "empty message map";
+    return messageMap_[0];
   }
 }
