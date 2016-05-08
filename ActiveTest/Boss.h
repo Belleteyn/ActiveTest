@@ -36,6 +36,8 @@ private:
 
   class MessageHolder* unshownMessages_;
   int messageIdCounter_;
+
+  class ServerTest* serverTest_;
 };
 
 #endif // BOSS_H

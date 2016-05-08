@@ -7,13 +7,21 @@
 #include <SMSObjectManager.h>
 #include <MessageHolder.h>
 
+#include <servertest.h>
+
 Boss::Boss(QObject *parent)
   : QObject(parent)
   , smsObjectManager_(nullptr)
   , isConfirmed_(false)
   , unshownMessages_(nullptr)
   , messageIdCounter_(0)
-{}
+  , serverTest_(new ServerTest(parent))
+{
+  QObject::connect(serverTest_, SIGNAL(emptyXml()), this, SLOT(onEmptyXml()));
+  QObject::connect(serverTest_, SIGNAL(emptyMessageXml()), this, SLOT(onEmptyMessageXml()));
+  QObject::connect(serverTest_, SIGNAL(serviceMessage()), this, SLOT(onMessageReceived()));
+  QObject::connect(serverTest_, SIGNAL(userMessage()), this, SLOT(onMessageReceived()));
+}
 
 Boss::~Boss()
 {
@@ -63,20 +71,21 @@ void Boss::onTitleCheck(bool isTitleAlive)
       isConfirmed_ = true;
 
       //TODO send confirmation to server 1 time
-      //server send empty xml
-      onEmptyXml();
+      serverTest_->emptyXmlRequest();
     }
   }
   else
   {
     qDebug() << "title is dead";
     isConfirmed_ = false;
+    //TODO is server need to know this?
   }
 }
 
 void Boss::onMessageSet()
 {
   //TODO send message confirmation to server
+  serverTest_->messageSetConfirm();
 }
 
 void Boss::onMessageDone()
@@ -89,7 +98,7 @@ void Boss::onMessageDone()
   else
   {
     //TODO message request
-    onMessageReceived();
+    serverTest_->userMessageRequest();
   }
 }
 
@@ -109,13 +118,14 @@ void Boss::onEmptyXml()
   else
   {
     //TODO message request
-    onMessageReceived();
+    serverTest_->userMessageRequest();
   }
 }
 
 void Boss::onEmptyMessageXml()
 {
   //TODO service message request
+  serverTest_->serviceMessageRequest();
 }
 
 void Boss::onMessageReceived()
@@ -127,23 +137,22 @@ void Boss::onMessageReceived()
 
 void Boss::showNextMessage() const
 {
-  MessageInfo message = unshownMessages_->first();
-  if (message.id != -1)
+  if (unshownMessages_->isEmpty())
   {
-    smsObjectManager_->setMessage(message.id, message.text, message.priority);
-
-    QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
-    bool isMobileUsing = settings.value("Mobile/use").toBool();
-    if (isMobileUsing)
-    {
-      qDebug() << "mobile app is using";
-      //TODO send to mobile app
-    }
-  }
-  else
-  {
-    qWarning() << "invalid message id (message queue is empty)";
-    //this means that message queue is empty
+    qWarning() << "empty message queue";
     //TODO request message
+    serverTest_->userMessageRequest();
+    return;
+  }
+
+  MessageInfo message = unshownMessages_->first();
+  smsObjectManager_->setMessage(message.id, message.text, message.priority);
+
+  QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
+  bool isMobileUsing = settings.value("Mobile/use").toBool();
+  if (isMobileUsing)
+  {
+    qDebug() << "mobile app is using";
+    //TODO send to mobile app
   }
 }
