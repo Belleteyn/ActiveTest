@@ -32,7 +32,8 @@ public:
   ~MessageHolder();
 
   void add(const MessageInfo& message);
-  void add(long id, const QByteArray& text, const QTime& receiveTime, const QByteArray& nick = "", int priority = -1, long senderNum = 0);
+  void add(long id, const QByteArray& text, const QTime& receiveTime
+           , int priority = 0, const QByteArray& nick = "", long senderNum = 0);
   void dequeue();
 
   bool isEmpty() const;
