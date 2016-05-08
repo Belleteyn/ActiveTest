@@ -21,7 +21,12 @@ signals:
   void emptyXml();
   void emptyMessageXml();
   void serviceMessage(long id, const QByteArray& message, const QTime& time);
-  void userMessage(long id, const QByteArray& message, const QTime& time);
+  void userMessage(long id, const QByteArray& message, const QTime& time, int priority);
+
+private:
+  bool randomBool();
+  long randomId();
+  int randomPrior();
 
 private:
   int messageIdCounter_;

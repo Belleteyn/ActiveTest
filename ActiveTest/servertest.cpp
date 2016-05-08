@@ -12,10 +12,10 @@ ServerTest::ServerTest(QObject *parent)
 void ServerTest::userMessageRequest()
 {
   messageIdCounter_++;
-  int isHaveUserMessages = rand() % 2;
-  if (isHaveUserMessages == 0)
+
+  if (randomBool()) //have user messages
   {
-    userMessage(messageIdCounter_, "user message", QTime::currentTime());
+    userMessage(randomId(), "user message", QTime::currentTime(), randomPrior());
   }
   else
   {
@@ -27,5 +27,49 @@ void ServerTest::userMessageRequest()
 void ServerTest::serviceMessageRequest()
 {
   messageIdCounter_++;
-  serviceMessage(messageIdCounter_, "service message", QTime::currentTime());
+  serviceMessage(randomId(), "service message", QTime::currentTime());
+}
+
+bool ServerTest::randomBool()
+{
+  int var = rand() % 2;
+  return (var == 0);
+}
+
+long ServerTest::randomId()
+{
+  if (randomBool()) // good id
+  {
+    if (sizeof(int) < sizeof(long))
+      return (static_cast<long>(rand()) << (sizeof(int) * 8)) | rand();
+
+    return rand();
+  }
+  else
+  {
+    return -rand();
+    }
+}
+
+int ServerTest::randomPrior()
+{
+  if (randomBool()) // good prior
+  {
+    return rand() % 8;
+  }
+  else
+  {
+    int prior;
+    if (randomBool()) // too big
+    {
+      prior = rand() + 7;
+    }
+    else //negative
+    {
+      prior = rand() % 8 - 8;
+    }
+
+    qDebug() << "bad priority" << prior;
+    return prior;
+  }
 }
