@@ -53,9 +53,9 @@ bool Boss::init()
   }
 
   QObject::connect(smsObjectManager_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
-  QObject::connect(smsObjectManager_, SIGNAL(messageSet()), this, SLOT(onMessageSet()));
-  QObject::connect(smsObjectManager_, SIGNAL(messageDone()), this, SLOT(onMessageDone()));
-  QObject::connect(smsObjectManager_, SIGNAL(messageFailed()), this, SLOT(onMessageFailed()));
+  QObject::connect(smsObjectManager_, SIGNAL(messageSet(long)), this, SLOT(onMessageSet(long)));
+  QObject::connect(smsObjectManager_, SIGNAL(messageDone(long)), this, SLOT(onMessageDone(long)));
+  QObject::connect(smsObjectManager_, SIGNAL(messageFailed(long)), this, SLOT(onMessageFailed(long)));
   smsObjectManager_->start();
 
   return true;
@@ -83,32 +83,53 @@ void Boss::onTitleCheck(bool isTitleAlive)
   titleActive(isTitleAlive);
 }
 
-void Boss::onMessageSet()
+void Boss::onMessageSet(long id)
 {
-  //TODO send message confirmation to server
-  serverTest_->messageSetConfirm();
-
-  MessageInfo message = unshownMessages_->first();
-  messageChanged(message.id, message.text, message.priority);
-}
-
-void Boss::onMessageDone()
-{
-  unshownMessages_->dequeue();
   if (!unshownMessages_->isEmpty())
   {
-    showNextMessage();
+    MessageInfo message = unshownMessages_->first();
+    if (message.id == id)
+    {
+      //TODO send message confirmation to server
+      serverTest_->messageSetConfirm();
+
+      messageChanged(message.id, message.text, message.priority);
+    }
+    else
+    {
+      qWarning() << "WTF? top message is not equal to set; ignore";
+    }
   }
   else
   {
-    //TODO message request
-    serverTest_->userMessageRequest();
+    qWarning() << "WTF? Message set, but queue is empty; ignore";
   }
 }
 
-void Boss::onMessageFailed()
+void Boss::onMessageDone(long id)
 {
-  qWarning() << "failed to set message, will try again on message callback";
+  if (!unshownMessages_->isEmpty())
+  {
+    MessageInfo message = unshownMessages_->first();
+    if (message.id == id)
+    {
+      unshownMessages_->dequeue();
+      showNextMessage();
+    }
+    else
+    {
+      qWarning() << "top message is not equal to done. it can be when app started while message have been shown; ignore";
+    }
+  }
+  else
+  {
+    qWarning() << "WTF? Message done, but queue is empty; ignore";
+  }
+}
+
+void Boss::onMessageFailed(long id)
+{
+  qWarning() << "failed to set message" << id << ", will try again on message callback";
 }
 
 void Boss::onEmptyXml()
@@ -149,10 +170,10 @@ void Boss::showNextMessage()
 {
   if (unshownMessages_->isEmpty())
   {
-    qWarning() << "empty message queue";
-    //TODO request message
-    serverTest_->userMessageRequest();
     messageChanged(-1, "", -1);
+
+    //TODO request message
+    serverTest_->userMessageRequest(); 
     return;
   }
 

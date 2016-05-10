@@ -21,9 +21,9 @@ signals:
 private slots:
   //from sms
   void onTitleCheck(bool isTitleAlive);
-  void onMessageSet();
-  void onMessageDone();
-  void onMessageFailed();
+  void onMessageSet(long id);
+  void onMessageDone(long id);
+  void onMessageFailed(long id);
 
   //from server
   void onEmptyXml();

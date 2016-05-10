@@ -122,12 +122,12 @@ void SMSObjectManager::setMessage(long id, const QByteArray &message, long prior
     if (FAILED(hr))
     {
       qDebug() << "failed set message" << id;
-      messageFailed();
+      messageFailed(id);
     }
     else
     {
       qDebug() << "succes set message" << id;
-      messageSet();
+      messageSet(id);
     }
   }
   else
@@ -219,7 +219,7 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
   iSMSCallBack_->setCallback([this](long id)
   {
     qDebug() << "done message" << id;
-    messageDone();
+    messageDone(id);
   });
 }
 
