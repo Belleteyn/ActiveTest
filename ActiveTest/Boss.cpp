@@ -87,6 +87,9 @@ void Boss::onMessageSet()
 {
   //TODO send message confirmation to server
   serverTest_->messageSetConfirm();
+
+  MessageInfo message = unshownMessages_->first();
+  messageChanged(message.id, message.text, message.priority);
 }
 
 void Boss::onMessageDone()
@@ -105,8 +108,7 @@ void Boss::onMessageDone()
 
 void Boss::onMessageFailed()
 {
-  qWarning() << "failed to set message, try again";
-  showNextMessage();
+  qWarning() << "failed to set message, will try again on message callback";
 }
 
 void Boss::onEmptyXml()
@@ -156,7 +158,6 @@ void Boss::showNextMessage()
 
   MessageInfo message = unshownMessages_->first();
   smsObjectManager_->setMessage(message.id, message.text, message.priority);
-  messageChanged(message.id, message.text, message.priority);
 
   QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
   bool isMobileUsing = settings.value("Mobile/use").toBool();
