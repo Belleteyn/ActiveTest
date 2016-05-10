@@ -46,7 +46,6 @@ void ServerTest::userMessageRequest()
   }
   else
   {
-    qDebug() << "no user messages";
     emptyMessageXml();
   }
 }
@@ -75,7 +74,7 @@ long ServerTest::randomId()
   else
   {
     return -rand();
-    }
+  }
 }
 
 int ServerTest::randomPrior()
@@ -96,15 +95,13 @@ int ServerTest::randomPrior()
       prior = rand() % 8 - 8;
     }
 
-    qDebug() << "bad priority" << prior;
     return prior;
-    }
+  }
 }
 
 QByteArray ServerTest::randomMessage()
 {
   qint64 id = rand() % messageMap_.size();
-  qDebug() << "get message" << id << "from" << messageMap_.size();
   if (id < messageMap_.size() && id >= 0 && !messageMap_.empty())
   {
     return messageMap_[id];
