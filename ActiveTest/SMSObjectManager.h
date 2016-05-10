@@ -18,7 +18,8 @@ public:
   void start();
   //
 
-  void setMessage(int id, const QByteArray& message, int priority);
+  bool testMessage(long id, const QByteArray& message, long priority);
+  void setMessage(long id, const QByteArray& message, long priority);
 
 signals:
   void titleCheck(bool isTitleAlive);

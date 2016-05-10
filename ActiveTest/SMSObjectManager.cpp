@@ -77,16 +77,48 @@ void SMSObjectManager::start()
   titleMonitorTimer_->start(1000);
 }
 
-void SMSObjectManager::setMessage(int id, const QByteArray &message, int priority)
+bool SMSObjectManager::testMessage(long id, const QByteArray &message, long priority)
 {
   if (iSMSObject_)
   {
-    QString messageInfo = QString("id = " + QString::number(id));
+    BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
+    float testResult;
+
+    HRESULT hr = iSMSObject_->TestMessage(bText, NULL, priority, id, &testResult);
+    SysFreeString(bText);
+
+    if (FAILED(hr))
+    {
+      qDebug() << "failed testing message" << id;
+      return false;
+    }
+    else
+    {
+      qDebug() << "succes testing message" << id;
+      return (testResult <= 1.0f);
+    }
+  }
+  else
+  {
+    qWarning() << "error testing message: no sms object";
+    //that message will be shown after iSMSObject was fixed. do nothing.
+    return false;
+  }
+}
+
+void SMSObjectManager::setMessage(long id, const QByteArray &message, long priority)
+{
+  if (iSMSObject_)
+  {
+    //QString messageInfo = QString("id = " + QString::number(id));
 
     BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
-    BSTR bInfo = SysAllocString(reinterpret_cast<const OLECHAR*>(messageInfo.utf16()));
+    //BSTR bInfo = SysAllocString(reinterpret_cast<const OLECHAR*>(messageInfo.utf16()));
 
-    HRESULT hr = iSMSObject_->SetMessage(bText, bInfo, priority, id);
+    HRESULT hr = iSMSObject_->SetMessage(bText, NULL, priority, id);
+    SysFreeString(bText);
+    //SysFreeString(bInfo);
+
     if (FAILED(hr))
     {
       qDebug() << "failed set message" << id;
@@ -97,9 +129,6 @@ void SMSObjectManager::setMessage(int id, const QByteArray &message, int priorit
       qDebug() << "succes set message" << id;
       messageSet();
     }
-
-    SysFreeString(bText);
-    SysFreeString(bInfo);
   }
   else
   {
