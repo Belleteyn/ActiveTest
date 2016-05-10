@@ -14,6 +14,9 @@ public:
   bool init();
 
 signals:
+  void titleActive(bool isTitleActive);
+  void serverActive(bool isServerActive);
+  void messageChanged(long currentId, const QString& currentMessage, long currentPriority);
 
 private slots:
   //from sms
@@ -29,7 +32,7 @@ private slots:
   void onServiceMessageReceived(long id, const QByteArray& message, const QTime& time);
 
 private:
-  void showNextMessage() const;
+  void showNextMessage();
   void addSplittedMessage(long id, const QByteArray &message, const QTime &time, long priority = 0);
   QByteArray formMessage(QList<QByteArray>* splittedMessage, long id, long priority);
 

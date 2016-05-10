@@ -79,6 +79,8 @@ void Boss::onTitleCheck(bool isTitleAlive)
     isConfirmed_ = false;
     //TODO is server need to know this?
   }
+
+  titleActive(isTitleAlive);
 }
 
 void Boss::onMessageSet()
@@ -129,28 +131,32 @@ void Boss::onEmptyMessageXml()
 
 void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, long priority)
 {
-  addSplittedMessage(id, message, time, priority);
+  //addSplittedMessage(id, message, time, priority);
+  unshownMessages_->add(id, message, time, priority);
   showNextMessage();
 }
 
 void Boss::onServiceMessageReceived(long id, const QByteArray &message, const QTime &time)
 {
-  addSplittedMessage(id, message, time);
+  //addSplittedMessage(id, message, time);
+  unshownMessages_->add(id, message, time, 0);
   showNextMessage();
 }
 
-void Boss::showNextMessage() const
+void Boss::showNextMessage()
 {
   if (unshownMessages_->isEmpty())
   {
     qWarning() << "empty message queue";
     //TODO request message
     serverTest_->userMessageRequest();
+    messageChanged(-1, "", -1);
     return;
   }
 
   MessageInfo message = unshownMessages_->first();
   smsObjectManager_->setMessage(message.id, message.text, message.priority);
+  messageChanged(message.id, message.text, message.priority);
 
   QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
   bool isMobileUsing = settings.value("Mobile/use").toBool();
@@ -181,6 +187,8 @@ QByteArray Boss::formMessage(QList<QByteArray> *splittedMessage, long id, long p
     if (smsObjectManager_->testMessage(id, test, priority))
     {
       newMessage.append(splittedMessage->first());
+      newMessage.append(' ');
+      test.append(' ');
       splittedMessage->pop_front();
     }
     else
