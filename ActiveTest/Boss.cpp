@@ -127,15 +127,15 @@ void Boss::onEmptyMessageXml()
   serverTest_->serviceMessageRequest();
 }
 
-void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, int priority)
+void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, long priority)
 {
-  unshownMessages_->add(id, message, time, priority);
+  addSplittedMessage(id, message, time, priority);
   showNextMessage();
 }
 
 void Boss::onServiceMessageReceived(long id, const QByteArray &message, const QTime &time)
 {
-  unshownMessages_->add(id, message, time);
+  addSplittedMessage(id, message, time);
   showNextMessage();
 }
 
@@ -159,4 +159,38 @@ void Boss::showNextMessage() const
     qDebug() << "mobile app is using";
     //TODO send to mobile app
   }
+}
+
+void Boss::addSplittedMessage(long id, const QByteArray &message, const QTime &time, long priority /* = 0*/)
+{
+  QList<QByteArray> spaceSplitted = message.split(' ');
+  QByteArray newMessage = formMessage(&spaceSplitted, id, priority);
+  while (newMessage.size() != 0)
+  {
+    unshownMessages_->add(id, newMessage, time, priority);
+    newMessage = formMessage(&spaceSplitted, id, priority);
+  }
+}
+
+QByteArray Boss::formMessage(QList<QByteArray> *splittedMessage, long id, long priority)
+{
+  QByteArray newMessage, test;
+  while (!splittedMessage->empty())
+  {
+    test.append(splittedMessage->first());
+    if (smsObjectManager_->testMessage(id, test, priority))
+    {
+      newMessage.append(splittedMessage->first());
+      splittedMessage->pop_front();
+    }
+    else
+    {
+      if (newMessage.size() == 0)
+      {
+        //TODO split by letters
+      }
+      break;
+    }
+  }
+  return newMessage;
 }

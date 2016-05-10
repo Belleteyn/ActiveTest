@@ -25,11 +25,13 @@ private slots:
   //from server
   void onEmptyXml();
   void onEmptyMessageXml();
-  void onUserMessageReceived(long id, const QByteArray& message, const QTime& time, int priority);
+  void onUserMessageReceived(long id, const QByteArray& message, const QTime& time, long priority);
   void onServiceMessageReceived(long id, const QByteArray& message, const QTime& time);
 
 private:
   void showNextMessage() const;
+  void addSplittedMessage(long id, const QByteArray &message, const QTime &time, long priority = 0);
+  QByteArray formMessage(QList<QByteArray>* splittedMessage, long id, long priority);
 
 private:
   class SMSObjectManager* smsObjectManager_;
