@@ -8,12 +8,12 @@ struct MessageInfo {
   long id = -1;
   QByteArray text;
   QByteArray nick;
-  int priority = -1;
+  long priority = -1;
   long senderNum = -1;
   QTime receiveTime;
 
   MessageInfo() {};
-  MessageInfo(long nId, QByteArray nText, QByteArray nNick, int nPriority, long nSenderNum, QTime nReceiveTime)
+  MessageInfo(long nId, QByteArray nText, QByteArray nNick, long nPriority, long nSenderNum, QTime nReceiveTime)
     : id(nId)
     , text(nText)
     , nick(nNick)
@@ -33,7 +33,7 @@ public:
 
   void add(const MessageInfo& message);
   void add(long id, const QByteArray& text, const QTime& receiveTime
-           , int priority = 0, const QByteArray& nick = "", long senderNum = 0);
+           , long priority = 0, const QByteArray& nick = "", long senderNum = 0);
   void dequeue();
 
   bool isEmpty() const;

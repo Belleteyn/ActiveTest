@@ -15,7 +15,7 @@ void MessageHolder::add(const MessageInfo &message)
   messageQueue_.enqueue(message);
 }
 
-void MessageHolder::add(long id, const QByteArray &text, const QTime &receiveTime, int priority
+void MessageHolder::add(long id, const QByteArray &text, const QTime &receiveTime, long priority
                         , const QByteArray &nick, long senderNum)
 {
   add(MessageInfo(id, text, nick, priority, senderNum, receiveTime));
