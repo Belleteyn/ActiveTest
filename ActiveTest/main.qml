@@ -7,7 +7,8 @@ ApplicationWindow {
     visible: true
     width: 400
     height: 150
-    title: "Hello ForwardT"
+    title: "SMSClient"
+
 
     property bool active: false
     property bool serverActive: false

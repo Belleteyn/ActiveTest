@@ -10,6 +10,8 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
+RC_ICONS = icon.ico
+
 SOURCES += main.cpp \
     #CSMSCallback.cpp \
     NetworkManager.cpp \

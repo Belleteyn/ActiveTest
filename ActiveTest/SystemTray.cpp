@@ -1,12 +1,14 @@
 #include "SystemTray.h"
 
+#include <QGuiApplication>
+
 SystemTray::SystemTray(QObject *parent)
   : QObject(parent)
 {
   trayIcon = new QSystemTrayIcon();
-  trayIcon->setIcon(QIcon(":/logo-min.png"));
+  trayIcon->setIcon(QIcon(QGuiApplication::applicationDirPath() + "/icon.ico"));
   trayIcon->show();
-  trayIcon->setToolTip("Hello ForwardT");
+  trayIcon->setToolTip("SMSClient");
 
   connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
           this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
