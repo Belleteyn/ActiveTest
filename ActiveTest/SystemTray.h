@@ -2,7 +2,6 @@
 #define SYSTEMTRAY_H
 
 #include <QObject>
-#include <QAction>
 #include <QSystemTrayIcon>
 
 class SystemTray : public QObject

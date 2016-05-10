@@ -2,9 +2,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
-#include <SystemTray.h>
-
 #include <Boss.h>
+#include <SystemTray.h>
 
 int main(int argc, char *argv[])
 {
