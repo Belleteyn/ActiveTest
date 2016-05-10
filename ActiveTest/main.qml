@@ -16,6 +16,9 @@ ApplicationWindow {
     property int priority: 0
     property string message: ""
 
+    property string error: ""
+    property bool noError: true
+
     onVisibilityChanged: {
         if (root.visibility === 3) {
             root.hide();
@@ -27,10 +30,30 @@ ApplicationWindow {
 
         onTitleActive: {
             active = isTitleActive;
+
+            if (!active) {
+                error = "Ошибка: неактивен титровальный элемент";
+                if(root.visibility === 0) {
+                    root.show();
+                }
+            }
+            else {
+                error = "";
+            }
         }
 
         onServerActive: {
             serverActive = isServerActive;
+
+            if (!serverActive) {
+                error = "Ошибка: неактивен сервер";
+                if(root.visibility === 0) {
+                    root.show();
+                }
+            }
+            else {
+                error = "";
+            }
         }
 
         onMessageChanged: {
@@ -88,5 +111,15 @@ ApplicationWindow {
                 height: parent.height
             }
         }
+    }
+
+    Text {
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+
+        text: error
+        color: "red"
+        font.bold: true
+        font.pointSize: 18
     }
 }
