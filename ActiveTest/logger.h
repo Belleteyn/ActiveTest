@@ -37,7 +37,7 @@ public:
     QByteArray data;
     data.append("<" + QDateTime::currentDateTime().toString("yyyy-MMMM-dd hh:mm:ss.zzzz") + ">");
     data.append("\t");
-    data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
+    //data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
 
     QByteArray localMsg = msg.toLocal8Bit();
     switch (type) {
