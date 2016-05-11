@@ -43,6 +43,7 @@ private:
   class MessageHolder* unshownMessages_;
 
   class ServerTest* serverTest_;
+  class NetworkManager* networkManager_;
 };
 
 #endif // BOSS_H

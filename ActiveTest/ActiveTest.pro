@@ -1,4 +1,4 @@
-QT += core axcontainer qml quick
+QT += core axcontainer qml quick network
 
 CONFIG += c++11 precompile_header
 

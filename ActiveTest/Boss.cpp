@@ -6,6 +6,7 @@
 
 #include <SMSObjectManager.h>
 #include <MessageHolder.h>
+#include <NetworkManager.h>
 
 #include <servertest.h>
 
@@ -15,11 +16,12 @@ Boss::Boss(QObject *parent)
   , isConfirmed_(false)
   , unshownMessages_(nullptr)
   , serverTest_(new ServerTest(parent))
+  , networkManager_(new NetworkManager(this))
 {
-  QObject::connect(serverTest_, SIGNAL(emptyXml()), this, SLOT(onEmptyXml()));
-  QObject::connect(serverTest_, SIGNAL(emptyMessageXml()), this, SLOT(onEmptyMessageXml()));
-  QObject::connect(serverTest_, &ServerTest::serviceMessage, this, &Boss::onServiceMessageReceived);
-  QObject::connect(serverTest_, &ServerTest::userMessage, this, &Boss::onUserMessageReceived);
+  QObject::connect(networkManager_, SIGNAL(emptyXml()), this, SLOT(onEmptyXml()));
+  QObject::connect(networkManager_, SIGNAL(emptyMessageXml()), this, SLOT(onEmptyMessageXml()));
+  QObject::connect(networkManager_, &NetworkManager::serviceMessage, this, &Boss::onServiceMessageReceived);
+  QObject::connect(networkManager_, &NetworkManager::userMessage, this, &Boss::onUserMessageReceived);
 }
 
 Boss::~Boss()
@@ -70,7 +72,7 @@ void Boss::onTitleCheck(bool isTitleAlive)
       isConfirmed_ = true;
 
       //TODO send confirmation to server 1 time
-      serverTest_->emptyXmlRequest();
+      networkManager_->emptyXmlRequest();
     }
   }
   else
@@ -91,7 +93,7 @@ void Boss::onMessageSet(long id)
     if (message.id == id)
     {
       //TODO send message confirmation to server
-      serverTest_->messageSetConfirm();
+      networkManager_->messageSetConfirm(id);
 
       messageChanged(message.id, message.text, message.priority);
     }
@@ -142,14 +144,14 @@ void Boss::onEmptyXml()
   else
   {
     //TODO message request
-    serverTest_->userMessageRequest();
+    networkManager_->userMessageRequest();
   }
 }
 
 void Boss::onEmptyMessageXml()
 {
   //TODO service message request
-  serverTest_->serviceMessageRequest();
+  networkManager_->serviceMessageRequest();
 }
 
 void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, long priority)
@@ -173,7 +175,7 @@ void Boss::showNextMessage()
     messageChanged(-1, "", -1);
 
     //TODO request message
-    serverTest_->userMessageRequest(); 
+    networkManager_->userMessageRequest();
     return;
   }
 

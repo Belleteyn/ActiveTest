@@ -5,9 +5,6 @@
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 
-#include <QJSValue>
-#include <QSettings>
-
 class NetworkManager : public QObject
 {
   Q_OBJECT
@@ -15,19 +12,50 @@ public:
   explicit NetworkManager(QObject *parent = 0);
 
 public:
-  Q_INVOKABLE void ping();
+  inline void emptyXmlRequest() { ping(); }
+  inline void messageSetConfirm(long id) { messageShown(id); }
+  inline void userMessageRequest() { getMessages(); }
+  inline void serviceMessageRequest() { getServiceMessage(); }
+
+  void ping();
+  void getMessages();
+  void messageShown(long id);
+  void getServiceMessage();
+
+  void sendMessageToMobile(const QByteArray& urlentext, long id, int priority, const QString& phone, const QTime& time);
+  void sendMessageToMobile(const QString& text, long id, int priority, const QString& phone, const QTime& time);
+
+  // не уверен надо ли это
+  void sendServiceMessageToMobile(const QByteArray& urlentext, const QTime& time);
+  void sendServiceMessageToMobile(const QString& text, const QTime& time);
 
 signals:
-
-public slots:
-private slots:
-  void replyFinished(QNetworkReply* reply);
+  void emptyXml();
+  void emptyMessageXml();
+  void serviceMessage(long id, const QByteArray& message, const QTime& time);
+  void userMessage(long id, const QByteArray& message, const QTime& time, int priority);
 
 private:
-  QNetworkReply* sendRequest(const char* type, const QString& server, const QString& password, int id);
+  QNetworkReply* sendRequest(const char* type);
+  void parseMessageXml(const QByteArray& xmlString);
+  void parseServiceMessageXml(const QByteArray& xmlString);
 
-public:
+private:
   QNetworkAccessManager* manager_;
+
+  struct RequestData
+  {
+    QString server;
+    QString password;
+    int id;
+    QByteArray hash;
+  } cache_;
+
+  struct MobileParams
+  {
+    QString server;
+    bool use;
+  } mobileParams_;
 };
 
 #endif // NETWORKMANAGER_H
