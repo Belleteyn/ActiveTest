@@ -32,7 +32,8 @@ HEADERS += \
     SMSCallback.h \
     MessageHolder.h \
     servertest.h \
-    SystemTray.h
+    SystemTray.h \
+    logger.h
 
 RESOURCES += \
     qml.qrc
