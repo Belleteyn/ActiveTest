@@ -15,13 +15,9 @@ Boss::Boss(QObject *parent)
   , smsObjectManager_(nullptr)
   , isConfirmed_(false)
   , unshownMessages_(nullptr)
-  , serverTest_(new ServerTest(parent))
-  , networkManager_(new NetworkManager(this))
+  , serverTest_(nullptr)
+  , networkManager_(nullptr)
 {
-  QObject::connect(networkManager_, SIGNAL(emptyXml()), this, SLOT(onEmptyXml()));
-  QObject::connect(networkManager_, SIGNAL(emptyMessageXml()), this, SLOT(onEmptyMessageXml()));
-  QObject::connect(networkManager_, &NetworkManager::serviceMessage, this, &Boss::onServiceMessageReceived);
-  QObject::connect(networkManager_, &NetworkManager::userMessage, this, &Boss::onUserMessageReceived);
 }
 
 Boss::~Boss()
@@ -41,6 +37,8 @@ bool Boss::init()
   {
     unshownMessages_ = new MessageHolder();
     smsObjectManager_ = new SMSObjectManager(this);
+    networkManager_ = new NetworkManager(this);
+    serverTest_ = new ServerTest(this);
   }
   catch (std::bad_alloc&)
   {
@@ -53,6 +51,11 @@ bool Boss::init()
     qWarning() << "Fatal error: unable to init SMSObjectManager;";
     return false;
   }
+
+  QObject::connect(networkManager_, &NetworkManager::emptyXml, this, &Boss::onEmptyXml);
+  QObject::connect(networkManager_, &NetworkManager::emptyMessageXml, this, &Boss::onEmptyMessageXml);
+  QObject::connect(networkManager_, &NetworkManager::serviceMessage, this, &Boss::onServiceMessageReceived);
+  QObject::connect(networkManager_, &NetworkManager::userMessage, this, &Boss::onUserMessageReceived);
 
   QObject::connect(smsObjectManager_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
   QObject::connect(smsObjectManager_, SIGNAL(messageSet(long)), this, SLOT(onMessageSet(long)));
@@ -70,8 +73,6 @@ void Boss::onTitleCheck(bool isTitleAlive)
     if (!isConfirmed_)
     {
       isConfirmed_ = true;
-
-      //TODO send confirmation to server 1 time
       networkManager_->emptyXmlRequest();
     }
   }
@@ -92,9 +93,7 @@ void Boss::onMessageSet(long id)
     MessageInfo message = unshownMessages_->first();
     if (message.id == id)
     {
-      //TODO send message confirmation to server
       networkManager_->messageSetConfirm(id);
-
       messageChanged(message.id, message.text, message.priority);
     }
     else
@@ -143,14 +142,12 @@ void Boss::onEmptyXml()
   }
   else
   {
-    //TODO message request
     networkManager_->userMessageRequest();
   }
 }
 
 void Boss::onEmptyMessageXml()
 {
-  //TODO service message request
   networkManager_->serviceMessageRequest();
 }
 
@@ -173,8 +170,6 @@ void Boss::showNextMessage()
   if (unshownMessages_->isEmpty())
   {
     messageChanged(-1, "", -1);
-
-    //TODO request message
     networkManager_->userMessageRequest();
     return;
   }
