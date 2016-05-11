@@ -5,9 +5,27 @@
 #include <Boss.h>
 #include <SystemTray.h>
 
+#include <QDir>
+#include <logger.h>
+
 int main(int argc, char *argv[])
 {
+  Logger logger;
+  qInstallMessageHandler(&Logger::myMessageOutput);
+
   QGuiApplication a(argc, argv);
+
+  QString logDirName("SMSLogs");
+  QDir logDir;
+  if (!logDir.exists(logDirName))
+  {
+    logDir.mkpath(logDirName);
+  }
+  logDir.cd(logDirName);
+  QString logFileName = QString(logDir.absolutePath() + "/log_%1.txt")
+    .arg(QDateTime::currentDateTime().toString("yyyy_MM_dd_hh-mm-ss"));
+
+  logger.initLog(logFileName);
 
   Boss boss;
   if (boss.init())
