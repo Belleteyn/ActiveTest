@@ -38,12 +38,7 @@ public:
 
     data.append(QString(msg) + "\n");
 
-    Logger& logger = Logger::instance();
-
-    if (logger.initialized_)
-    {
-      logger.stream_ << data;
-    }
+    Logger::instance().add(data);
   }
 
   static void fullOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
@@ -75,12 +70,7 @@ public:
     data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
     data.append(QString(msg) + "\n");
 
-    Logger& logger = Logger::instance();
-
-    if (logger.initialized_)
-    {
-      logger.stream_ << data;
-    }
+    Logger::instance().add(data);
   }
 
 public:
@@ -120,11 +110,20 @@ public:
   }
 
 private:
-  Logger() {}
+  Logger() : initialized_(false) {}
   ~Logger() { close(); }
 
   Logger(const Logger&) = delete;
   Logger& operator = (const Logger&) = delete;
+
+  template <class T>
+  inline void add(const T& data)
+  {
+    if (initialized_)
+    {
+      stream_ << data;
+    }
+  }
 
 private:
   QFile file_;
