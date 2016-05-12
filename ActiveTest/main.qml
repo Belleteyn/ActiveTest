@@ -5,10 +5,12 @@ import QtQuick.Layouts 1.1
 ApplicationWindow {
     id: root
     visible: true
-    width: 400
-    height: 150
+    width: 500
+    height: 200
     title: "SMSClient"
 
+    Layout.minimumHeight: 100
+    Layout.minimumWidth: 400
 
     property bool active: false
     property bool serverActive: false
@@ -61,8 +63,6 @@ ApplicationWindow {
             id = currentId;
             message = currentMessage;
             priority = currentPriority;
-
-            messageText.text = currentMessage;
         }
     }
 
@@ -78,49 +78,72 @@ ApplicationWindow {
         }
     }
 
-    ColumnLayout {
-        id: firstCol
-        Text { text: "Титровальный элемент активен:" }
-        Text { text: "Сервер активен:" }
-        Text { text: "Текущее сообщение:" }
-    }
+    RowLayout {
+        anchors.fill: parent
 
-    ColumnLayout {
-        id: secondCol
-        width: root.width - firstCol.width
-        anchors.top:  firstCol.top
-        anchors.left: firstCol.right
-        anchors.leftMargin: 5
+        ColumnLayout {
+            id: firstCol
 
-        Text { text: active.toString() }
-        Text { text: serverActive.toString() }
-        RowLayout {
-            Text { text: "id:" }
-            Text { text: id.toString() }
+            Layout.fillHeight: true
+            Text { text: "Титровальный элемент активен:" }
+            Text { text: "Сервер активен:" }
+            Text { text: "Текущее сообщение:" }
+            Rectangle {
+                Layout.fillHeight: true
+                color: "transparent"
+            }
         }
-        RowLayout {
-            Text { text: "приоритет:" }
-            Text { text: priority.toString() }
-        }
-        RowLayout {
-            Text { text: "текст:" }
-            Text {
-                id: messageText
-                text: ""
-                wrapMode: Text.WrapAnywhere;
-                width: parent.width
-                height: parent.height
+
+        ColumnLayout {
+            id: secondCol
+            width: root.width - firstCol.width
+            Layout.fillHeight: true
+
+            Text { text: active.toString() }
+            Text { text: serverActive.toString() }
+
+            RowLayout {
+                Text { text: "id:" }
+                Text { text: id.toString() }
+            }
+
+            RowLayout {
+                Text { text: "приоритет:" }
+                Text { text: priority.toString() }
+            }
+
+            Rectangle {
+                //width: secondCol.width - 5
+                Layout.fillHeight: true
+                Layout.fillWidth: true
+                color: "transparent"
+
+                Text {
+                    id: messageText
+                    text: message
+                    wrapMode: Text.Wrap;
+
+                    width: parent.width
+                    height: parent.height
+                }
             }
         }
     }
 
-    Text {
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
+    Rectangle {
+        height: parent.height
+        width: parent.width
+        color: "transparent"
 
-        text: error
-        color: "red"
-        font.bold: true
-        font.pointSize: 18
+        Text {
+            anchors.fill: parent
+            verticalAlignment: Text.AlignBottom
+
+            text: error
+            color: "red"
+            font.bold: true
+            font.pointSize: 18
+            wrapMode: Text.Wrap;
+        }
     }
 }
