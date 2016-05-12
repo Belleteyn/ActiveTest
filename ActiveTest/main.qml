@@ -20,7 +20,6 @@ ApplicationWindow {
     property string message: ""
 
     property string error: ""
-    property bool noError: true
 
     onVisibilityChanged: {
         if (root.visibility === 3) {
@@ -41,7 +40,8 @@ ApplicationWindow {
                 }
             }
             else {
-                error = "";
+                if (serverActive)
+                    error = "";
             }
         }
 
@@ -55,7 +55,8 @@ ApplicationWindow {
                 }
             }
             else {
-                error = "";
+                if (active)
+                    error = "";
             }
         }
 
@@ -138,6 +139,7 @@ ApplicationWindow {
         Text {
             anchors.fill: parent
             verticalAlignment: Text.AlignBottom
+            horizontalAlignment: Text.AlignHCenter
 
             text: error
             color: "red"
