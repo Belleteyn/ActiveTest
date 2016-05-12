@@ -22,23 +22,27 @@ public:
     case QtDebugMsg:
       data.append("Debug:\t");
       fprintf(stderr, "Debug: %s\n", localMsg.constData());
+      data.append(QString(msg) + "\n");
+      Logger::instance().add(data);
       break;
     case QtWarningMsg:
       data.append("Warning:\t");
       fprintf(stderr, "Warning: %s\n", localMsg.constData());
+      data.append(QString(msg) + "\n");
+      Logger::instance().forceWrite(data);
       break;
     case QtCriticalMsg:
       data.append("Critical:\t");
       fprintf(stderr, "Critical: %s\n", localMsg.constData());
+      data.append(QString(msg) + "\n");
+      Logger::instance().forceWrite(data);
       break;
     case QtFatalMsg:
       data.append("Fatal:\t");
       fprintf(stderr, "Fatal: %s\n", localMsg.constData());
+      data.append(QString(msg) + "\n");
+      Logger::instance().forceWrite(data);
     }
-
-    data.append(QString(msg) + "\n");
-
-    Logger::instance().add(data);
   }
 
   static void fullOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
@@ -53,24 +57,31 @@ public:
     case QtDebugMsg:
       data.append("Debug:\t");
       fprintf(stderr, "Debug: %s\n", localMsg.constData());
+      data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
+      data.append(QString(msg) + "\n");
+      Logger::instance().add(data);
       break;
     case QtWarningMsg:
       data.append("Warning:\t");
       fprintf(stderr, "Warning: %s\n", localMsg.constData());
+      data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
+      data.append(QString(msg) + "\n");
+      Logger::instance().forceWrite(data);
       break;
     case QtCriticalMsg:
       data.append("Critical:\t");
       fprintf(stderr, "Critical: %s\n", localMsg.constData());
+      data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
+      data.append(QString(msg) + "\n");
+      Logger::instance().forceWrite(data);
       break;
     case QtFatalMsg:
       data.append("Fatal:\t");
       fprintf(stderr, "Fatal: %s\n", localMsg.constData());
+      data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
+      data.append(QString(msg) + "\n");
+      Logger::instance().forceWrite(data);
     }
-
-    data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
-    data.append(QString(msg) + "\n");
-
-    Logger::instance().add(data);
   }
 
 public:
@@ -122,6 +133,20 @@ private:
     if (initialized_)
     {
       stream_ << data;
+    }
+  }
+
+  template <class T>
+  inline void forceWrite(const T& data)
+  {
+    if (initialized_)
+    {
+      stream_ << data;
+
+      stream_.flush();
+      file_.close();
+
+      initialized_ = file_.open(QIODevice::Append);
     }
   }
 

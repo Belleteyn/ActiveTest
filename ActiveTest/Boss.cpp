@@ -42,13 +42,13 @@ bool Boss::init()
   }
   catch (std::bad_alloc&)
   {
-    qWarning() << "Fatal error: unable to create SMSObjectManager or MessageHolder;";
+    qFatal("Fatal error: unable to create SMSObjectManager or MessageHolder;");
     return false;
   }
 
   if (!smsObjectManager_->init())
   {
-    qWarning() << "Fatal error: unable to init SMSObjectManager;";
+    qFatal("Fatal error: unable to init SMSObjectManager;");
     return false;
   }
 
