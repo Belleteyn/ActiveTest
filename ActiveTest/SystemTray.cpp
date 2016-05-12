@@ -6,7 +6,7 @@ SystemTray::SystemTray(QObject *parent)
   : QObject(parent)
 {
   trayIcon = new QSystemTrayIcon();
-  trayIcon->setIcon(QIcon(QGuiApplication::applicationDirPath() + "/icon.ico"));
+  trayIcon->setIcon(QIcon(":/icon.ico"));
   trayIcon->show();
   trayIcon->setToolTip("SMSClient");
 
