@@ -151,6 +151,7 @@ void Boss::onMessageFailed(long id)
 
 void Boss::onEmptyXml()
 {
+  serverActive(true);
   if (!unshownMessages_->isEmpty())
   {
     qWarning() << "some messages was not shown, show them first";
@@ -165,12 +166,14 @@ void Boss::onEmptyXml()
 
 void Boss::onEmptyMessageXml()
 {
+  serverActive(true);
   networkManager_->serviceMessageRequest();
   serverTest_->serviceMessageRequest();
 }
 
 void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, long priority)
 {
+  serverActive(true);
   //addSplittedMessage(id, message, time, priority);
   unshownMessages_->add(id, message, time, priority);
   showNextMessage();
@@ -178,6 +181,7 @@ void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime
 
 void Boss::onServiceMessageReceived(long id, const QByteArray &message, const QTime &time)
 {
+  serverActive(true);
   //addSplittedMessage(id, message, time);
   unshownMessages_->add(id, message, time, 0);
   showNextMessage();

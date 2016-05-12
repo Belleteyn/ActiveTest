@@ -49,7 +49,7 @@ ApplicationWindow {
             serverActive = isServerActive;
 
             if (!serverActive) {
-                error = "Ошибка: неактивен сервер";
+                error = "Ошибка при отправке запроса";
                 if(root.visibility === 0) {
                     root.show();
                 }
