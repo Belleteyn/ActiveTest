@@ -192,8 +192,6 @@ QNetworkReply* NetworkManager::sendRequest(const char* type)
 {
   QNetworkRequest request;
 
-  qDebug() << cache_.server;
-
   request.setUrl(QUrl(cache_.server));
   request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
 
@@ -219,10 +217,12 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString)
         {
           QXmlStreamAttributes attributes = xml.attributes();
 
+#ifdef LOG_DEBUG
           for (const QXmlStreamAttribute& attribute : attributes)
           {
             qDebug() << attribute.name() << " : " << attribute.value();
           }
+#endif
 
           userMessage(attributes.value("id").toLong()
             , QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8()
@@ -261,10 +261,12 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString)
     {
       QXmlStreamAttributes attributes = xml.attributes();
 
+#ifdef LOG_DEBUG
       for (const QXmlStreamAttribute& attribute : attributes)
       {
         qDebug() << attribute.name() << " : " << attribute.value();
       }
+#endif
 
       serviceMessage(attributes.value("id").toLong()
         , QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8()
