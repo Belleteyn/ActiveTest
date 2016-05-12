@@ -1,0 +1,20 @@
+<2016-05-12 03:19:30.593593>	Debug:	bool __thiscall Logger::open(const class QString &):		(103)		~open log
+<2016-05-12 03:19:30.646646>	Debug:	__thiscall ServerTest::ServerTest(class QObject *):		(34)		~cant open file
+<2016-05-12 03:19:30.678678>	Debug:	bool __thiscall SMSObjectManager::initSmsObjectManager(void):		(44)		~succes smsObjectManager
+<2016-05-12 03:19:32.02727>	Debug:	void __thiscall SMSObjectManager::onTitleMonitorTimer(void):		(151)		~failed to find ""
+<2016-05-12 03:19:32.02727>	Debug:	void __thiscall SMSObjectManager::resetSMSObject(void):		(228)		~reset SMS object
+<2016-05-12 03:19:32.02727>	Debug:	void __thiscall Boss::onTitleCheck(bool):		(81)		~title is dead
+<2016-05-12 03:19:32.697697>	Debug:	void __thiscall SMSObjectManager::onTitleMonitorTimer(void):		(151)		~failed to find ""
+<2016-05-12 03:19:32.697697>	Debug:	void __thiscall SMSObjectManager::resetSMSObject(void):		(228)		~reset SMS object
+<2016-05-12 03:19:32.697697>	Debug:	void __thiscall Boss::onTitleCheck(bool):		(81)		~title is dead
+<2016-05-12 03:19:33.687687>	Debug:	void __thiscall SMSObjectManager::onTitleMonitorTimer(void):		(151)		~failed to find ""
+<2016-05-12 03:19:33.687687>	Debug:	void __thiscall SMSObjectManager::resetSMSObject(void):		(228)		~reset SMS object
+<2016-05-12 03:19:33.687687>	Debug:	void __thiscall Boss::onTitleCheck(bool):		(81)		~title is dead
+<2016-05-12 03:19:34.689689>	Debug:	void __thiscall SMSObjectManager::onTitleMonitorTimer(void):		(151)		~failed to find ""
+<2016-05-12 03:19:34.689689>	Debug:	void __thiscall SMSObjectManager::resetSMSObject(void):		(228)		~reset SMS object
+<2016-05-12 03:19:34.689689>	Debug:	void __thiscall Boss::onTitleCheck(bool):		(81)		~title is dead
+<2016-05-12 03:19:35.692692>	Debug:	void __thiscall SMSObjectManager::onTitleMonitorTimer(void):		(151)		~failed to find ""
+<2016-05-12 03:19:35.692692>	Debug:	void __thiscall SMSObjectManager::resetSMSObject(void):		(228)		~reset SMS object
+<2016-05-12 03:19:35.692692>	Debug:	void __thiscall Boss::onTitleCheck(bool):		(81)		~title is dead
+<2016-05-12 03:19:36.638638>	Debug:	void __thiscall SMSObjectManager::resetSMSObject(void):		(228)		~reset SMS object
+<2016-05-12 03:19:36.654654>	Debug:	void __thiscall Logger::close(void):		(113)		~close log
