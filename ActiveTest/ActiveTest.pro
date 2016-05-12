@@ -8,6 +8,14 @@ TARGET = ActiveTest
 CONFIG += console
 CONFIG -= app_bundle
 
+CONFIG(debug, debug|release) {
+  DEFINES += LOG_DEBUG
+  message(debug build)
+} else:CONFIG(release, debug|release) {
+  DEFINES += LOG_RELEASE
+  message(release build)
+}
+
 TEMPLATE = app
 
 RC_ICONS = icon.ico
