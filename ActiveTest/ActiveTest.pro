@@ -5,15 +5,18 @@ CONFIG += c++11 precompile_header
 PRECOMPILED_HEADER = pch.h
 
 TARGET = ActiveTest
-CONFIG += console
-CONFIG -= app_bundle
 
 CONFIG(debug, debug|release) {
-  DEFINES += LOG_DEBUG
+
   message(debug build)
+
+  CONFIG += console
+  DEFINES += LOG_DEBUG
 } else:CONFIG(release, debug|release) {
-  DEFINES += LOG_RELEASE
+
   message(release build)
+
+  DEFINES += LOG_RELEASE
 }
 
 TEMPLATE = app
