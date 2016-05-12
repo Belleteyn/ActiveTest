@@ -10,8 +10,11 @@
 
 int main(int argc, char *argv[])
 {
-  Logger logger;
-  qInstallMessageHandler(&Logger::myMessageOutput);
+#ifdef LOG_DEBUG
+  qInstallMessageHandler(&Logger::fullOutput);
+#elif LOG_RELEASE
+  qInstallMessageHandler(&Logger::compactOutput);
+#endif
 
   QGuiApplication a(argc, argv);
 
@@ -25,7 +28,8 @@ int main(int argc, char *argv[])
   QString logFileName = QString(logDir.absolutePath() + "/log_%1.txt")
     .arg(QDateTime::currentDateTime().toString("yyyy_MM_dd_hh-mm-ss"));
 
-  logger.initLog(logFileName);
+  Logger& logger = Logger::instance();
+  logger.open(logFileName);
 
   Boss boss;
   if (boss.init())

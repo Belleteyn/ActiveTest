@@ -5,42 +5,20 @@
 #include <QTextStream>
 #include <QDateTime>
 
-class Logger;
-Logger* instance = nullptr;
-
 class Logger
 {
 public:
-  Logger()
-  {
-    instance = this;
-  }
-  ~Logger()
-  {
-    qDebug() << "close application";
-    logFile.close();
-    instance = nullptr;
-  }
-
-  bool initLog(const QString& name)
-  {
-    logFile.setFileName(name);
-    if (logFile.open(QIODevice::WriteOnly))
-    {
-      ts.setDevice(&logFile);
-    }
-    return false;
-  }
-
-  static void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+  static void compactOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
   {
     QByteArray data;
-    data.append("<" + QDateTime::currentDateTime().toString("yyyy-MMMM-dd hh:mm:ss.zzzz") + ">");
+
+    data.append("<" + QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzzz") + ">");
     data.append("\t");
-    //data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
 
     QByteArray localMsg = msg.toLocal8Bit();
-    switch (type) {
+
+    switch (type)
+    {
     case QtDebugMsg:
       data.append("Debug:\t");
       fprintf(stderr, "Debug: %s\n", localMsg.constData());
@@ -57,17 +35,101 @@ public:
       data.append("Fatal:\t");
       fprintf(stderr, "Fatal: %s\n", localMsg.constData());
     }
+
     data.append(QString(msg) + "\n");
 
-    if (instance)
+    Logger::instance().add(data);
+  }
+
+  static void fullOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg)
+  {
+    QByteArray data;
+    data.append("<" + QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzzz") + ">");
+    data.append("\t");
+
+    QByteArray localMsg = msg.toLocal8Bit();
+    switch (type)
     {
-      instance->ts << data;
+    case QtDebugMsg:
+      data.append("Debug:\t");
+      fprintf(stderr, "Debug: %s\n", localMsg.constData());
+      break;
+    case QtWarningMsg:
+      data.append("Warning:\t");
+      fprintf(stderr, "Warning: %s\n", localMsg.constData());
+      break;
+    case QtCriticalMsg:
+      data.append("Critical:\t");
+      fprintf(stderr, "Critical: %s\n", localMsg.constData());
+      break;
+    case QtFatalMsg:
+      data.append("Fatal:\t");
+      fprintf(stderr, "Fatal: %s\n", localMsg.constData());
+    }
+
+    data.append(QString("%1:\t\t(%2)\t\t~").arg(context.function).arg(context.line));
+    data.append(QString(msg) + "\n");
+
+    Logger::instance().add(data);
+  }
+
+public:
+  static Logger& instance()
+  {
+    static Logger loggerInstance;
+    return loggerInstance;
+  }
+
+  bool open(const QString& name)
+  {
+    file_.setFileName(name);
+
+    initialized_ = file_.open(QIODevice::WriteOnly);
+
+    if (initialized_)
+    {
+      stream_.setDevice(&file_);
+
+      qDebug() << "open log";
+    }
+
+    return initialized_;
+  }
+
+  void close()
+  {
+    if (initialized_)
+    {
+      qDebug() << "close log";
+
+      stream_.flush();
+      file_.close();
+
+      initialized_ = false;
     }
   }
 
 private:
-  QFile logFile;
-  QTextStream ts;
+  Logger() : initialized_(false) {}
+  ~Logger() { close(); }
+
+  Logger(const Logger&) = delete;
+  Logger& operator = (const Logger&) = delete;
+
+  template <class T>
+  inline void add(const T& data)
+  {
+    if (initialized_)
+    {
+      stream_ << data;
+    }
+  }
+
+private:
+  QFile file_;
+  QTextStream stream_;
+
+  bool initialized_;
 };
 
 #endif // LOGGER_H

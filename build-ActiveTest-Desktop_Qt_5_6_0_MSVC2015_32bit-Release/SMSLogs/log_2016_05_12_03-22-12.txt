@@ -1,0 +1,23 @@
+<2016-05-12 03:22:12.943943>	Debug:	open log
+<2016-05-12 03:22:12.970970>	Debug:	cant open file
+<2016-05-12 03:22:12.996996>	Debug:	succes smsObjectManager
+<2016-05-12 03:22:14.0022>	Debug:	failed to find ""
+<2016-05-12 03:22:14.0022>	Debug:	reset SMS object
+<2016-05-12 03:22:14.0022>	Debug:	title is dead
+<2016-05-12 03:22:15.0044>	Debug:	failed to find ""
+<2016-05-12 03:22:15.0044>	Debug:	reset SMS object
+<2016-05-12 03:22:15.0044>	Debug:	title is dead
+<2016-05-12 03:22:15.998998>	Debug:	failed to find ""
+<2016-05-12 03:22:15.998998>	Debug:	reset SMS object
+<2016-05-12 03:22:15.998998>	Debug:	title is dead
+<2016-05-12 03:22:16.997997>	Debug:	failed to find ""
+<2016-05-12 03:22:16.997997>	Debug:	reset SMS object
+<2016-05-12 03:22:16.997997>	Debug:	title is dead
+<2016-05-12 03:22:17.997997>	Debug:	failed to find ""
+<2016-05-12 03:22:17.997997>	Debug:	reset SMS object
+<2016-05-12 03:22:17.997997>	Debug:	title is dead
+<2016-05-12 03:22:18.998998>	Debug:	failed to find ""
+<2016-05-12 03:22:18.998998>	Debug:	reset SMS object
+<2016-05-12 03:22:18.998998>	Debug:	title is dead
+<2016-05-12 03:22:19.578578>	Debug:	reset SMS object
+<2016-05-12 03:22:19.581581>	Debug:	close log
