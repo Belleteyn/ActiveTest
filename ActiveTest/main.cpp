@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
   QGuiApplication a(argc, argv);
 
   QString logDirName("SMSLogs");
-  QDir logDir;
+  QDir logDir(QGuiApplication::applicationDirPath());
   if (!logDir.exists(logDirName))
   {
     logDir.mkpath(logDirName);
