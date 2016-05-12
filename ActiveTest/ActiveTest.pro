@@ -1,10 +1,10 @@
-QT += core axcontainer qml quick network
+QT += core gui axcontainer qml quick network
 
 CONFIG += c++11 precompile_header
 
 PRECOMPILED_HEADER = pch.h
 
-TARGET = ActiveTest
+TARGET = SMSClient
 
 CONFIG(debug, debug|release) {
 
