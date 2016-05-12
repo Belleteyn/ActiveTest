@@ -31,6 +31,10 @@ private slots:
   void onUserMessageReceived(long id, const QByteArray& message, const QTime& time, long priority);
   void onServiceMessageReceived(long id, const QByteArray& message, const QTime& time);
 
+  void onServerError();
+  void onMobileError();
+  void onParseError();
+
 private:
   void showNextMessage();
   void addSplittedMessage(long id, const QByteArray &message, const QTime &time, long priority = 0);

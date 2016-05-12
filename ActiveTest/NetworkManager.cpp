@@ -43,7 +43,8 @@ void NetworkManager::ping()
       }
       else
       {
-        qDebug() << "gor error in PING";
+        qCritical() << "gor error in PING";
+        pingError();
       }
       reply->deleteLater();
     });
@@ -63,7 +64,8 @@ void NetworkManager::getMessages()
       }
       else
       {
-        qDebug() << "gor error in GET_MESSAGES";
+        qWarning() << "gor error in GET_MESSAGES";
+        messageError();
       }
       reply->deleteLater();
     });
@@ -90,7 +92,8 @@ void NetworkManager::messageShown(long id)
     {
       if(reply->error() != QNetworkReply::NoError)
       {
-        qDebug() << "gor error in MESSAGE_SHOWN";
+        qWarning() << "gor error in MESSAGE_SHOWN";
+        messageConfirmError();
       }
       reply->deleteLater();
     });
@@ -110,7 +113,8 @@ void NetworkManager::getServiceMessage()
       }
       else
       {
-        qDebug() << "gor error in GET_SERVICE_MESSAGE";
+        qWarning() << "gor error in GET_SERVICE_MESSAGE";
+        serviceMessageError();
       }
       reply->deleteLater();
     });
@@ -138,7 +142,8 @@ void NetworkManager::sendMessageToMobile(const QByteArray& urlentext, long id, i
     {
       if(reply->error() != QNetworkReply::NoError)
       {
-        qDebug() << "gor error in sendMessageToMobile";
+        qWarning() << "gor error in sendMessageToMobile";
+        mobileMessageError();
       }
       reply->deleteLater();
     });
@@ -170,7 +175,8 @@ void NetworkManager::sendServiceMessageToMobile(const QByteArray& urlentext, con
     {
       if(reply->error() != QNetworkReply::NoError)
       {
-        qDebug() << "gor error in sendServiceMessageToMobile";
+        qWarning() << "gor error in sendServiceMessageToMobile";
+        mobileMessageError();
       }
       reply->deleteLater();
     });
@@ -229,18 +235,19 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString)
       else
       {
         qDebug() << "cant find ~message~ tag";
-
         emptyMessageXml();
       }
     }
     else
     {
-      qDebug() << "cant find ~messages~ tag";
+      qWarning() << "cant find ~messages~ tag";
+      parseMessageError();
     }
   }
   else
   {
-    qDebug() << "empty xml";
+    qWarning() << "empty xml";
+    parseMessageError();
   }
 }
 
@@ -267,11 +274,13 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString)
     }
     else
     {
-      qDebug() << "cant find ~message~ tag";
+      qWarning() << "cant find ~message~ tag";
+      parseServiceMessageError();
     }
   }
   else
   {
-    qDebug() << "empty xml";
+    qWarning() << "empty xml";
+    parseServiceMessageError();
   }
 }

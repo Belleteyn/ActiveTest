@@ -57,6 +57,21 @@ bool Boss::init()
   QObject::connect(networkManager_, &NetworkManager::serviceMessage, this, &Boss::onServiceMessageReceived);
   QObject::connect(networkManager_, &NetworkManager::userMessage, this, &Boss::onUserMessageReceived);
 
+  QObject::connect(networkManager_, &NetworkManager::pingError, this, &Boss::onServerError);
+  QObject::connect(networkManager_, &NetworkManager::messageError, this, &Boss::onServerError);
+  QObject::connect(networkManager_, &NetworkManager::serviceMessageError, this, &Boss::onServerError);
+  QObject::connect(networkManager_, &NetworkManager::messageConfirmError, this, &Boss::onServerError);
+
+  QObject::connect(networkManager_, &NetworkManager::mobileMessageError, this, &Boss::onMobileError);
+  QObject::connect(networkManager_, &NetworkManager::parseMessageError, this, &Boss::onParseError);
+  QObject::connect(networkManager_, &NetworkManager::parseServiceMessageError, this, &Boss::onParseError);
+
+
+  QObject::connect(serverTest_, &ServerTest::emptyXml, this, &Boss::onEmptyXml);
+  QObject::connect(serverTest_, &ServerTest::emptyMessageXml, this, &Boss::onEmptyMessageXml);
+  QObject::connect(serverTest_, &ServerTest::serviceMessage, this, &Boss::onServiceMessageReceived);
+  QObject::connect(serverTest_, &ServerTest::userMessage, this, &Boss::onUserMessageReceived);
+
   QObject::connect(smsObjectManager_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
   QObject::connect(smsObjectManager_, SIGNAL(messageSet(long)), this, SLOT(onMessageSet(long)));
   QObject::connect(smsObjectManager_, SIGNAL(messageDone(long)), this, SLOT(onMessageDone(long)));
@@ -73,7 +88,8 @@ void Boss::onTitleCheck(bool isTitleAlive)
     if (!isConfirmed_)
     {
       isConfirmed_ = true;
-      networkManager_->emptyXmlRequest();
+      //networkManager_->emptyXmlRequest();
+      serverTest_->emptyXmlRequest();
     }
   }
   else
@@ -143,12 +159,14 @@ void Boss::onEmptyXml()
   else
   {
     networkManager_->userMessageRequest();
+    serverTest_->userMessageRequest();
   }
 }
 
 void Boss::onEmptyMessageXml()
 {
   networkManager_->serviceMessageRequest();
+  serverTest_->serviceMessageRequest();
 }
 
 void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, long priority)
@@ -165,12 +183,29 @@ void Boss::onServiceMessageReceived(long id, const QByteArray &message, const QT
   showNextMessage();
 }
 
+void Boss::onServerError()
+{
+  serverActive(false);
+  //TODO ?
+}
+
+void Boss::onMobileError()
+{
+  //TODO ?
+}
+
+void Boss::onParseError()
+{
+  //TODO ?
+}
+
 void Boss::showNextMessage()
 {
   if (unshownMessages_->isEmpty())
   {
     messageChanged(-1, "", -1);
     networkManager_->userMessageRequest();
+    serverTest_->userMessageRequest();
     return;
   }
 
