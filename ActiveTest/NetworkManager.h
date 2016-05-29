@@ -17,6 +17,7 @@ using Callback = std::function<void(const OpResult& error, const Args& ... args)
 class NetworkManager : public QObject
 {
   Q_OBJECT
+
 public:
   explicit NetworkManager(QObject *parent = 0);  
 
