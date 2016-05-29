@@ -44,7 +44,8 @@ HEADERS += \
     MessageHolder.h \
     servertest.h \
     SystemTray.h \
-    logger.h
+    logger.h \
+    Message.h
 
 RESOURCES += \
     qml.qrc
