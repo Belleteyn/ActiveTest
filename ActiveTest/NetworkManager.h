@@ -29,21 +29,6 @@ public:
   void sendMessageToMobile(const Message& message);
   void sendServiceMessageToMobile(const Message& message);
 
-signals:
-  void emptyXml();
-  void emptyMessageXml();
-  void serviceMessage(long id, const QByteArray& message, const QTime& time);
-  void userMessage(long id, const QByteArray& message, const QTime& time, int priority);
-
-  void pingError();
-  void messageError();
-  void serviceMessageError();
-  void messageConfirmError();
-  void mobileMessageError();
-
-  void parseMessageError();
-  void parseServiceMessageError();
-
 private:
   QNetworkReply* sendRequest(const char* type);
 

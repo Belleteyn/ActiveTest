@@ -103,7 +103,11 @@ void NetworkManager::messageSetConfirm(long id, const Callback<>& callback)
       if(reply->error() != QNetworkReply::NoError)
       {
         qWarning() << "gor error in MESSAGE_SHOWN";
-        messageConfirmError();
+
+        if (callback)
+        {
+          callback(OpResult::RequestError);
+        }
       }
       reply->deleteLater();
     });
@@ -156,7 +160,6 @@ void NetworkManager::sendMessageToMobile(const Message& message)
       if(reply->error() != QNetworkReply::NoError)
       {
         qWarning() << "gor error in sendMessageToMobile";
-        mobileMessageError();
       }
       reply->deleteLater();
     });
@@ -184,7 +187,6 @@ void NetworkManager::sendServiceMessageToMobile(const Message& message)
       if(reply->error() != QNetworkReply::NoError)
       {
         qWarning() << "gor error in sendServiceMessageToMobile";
-        mobileMessageError();
       }
       reply->deleteLater();
     });
