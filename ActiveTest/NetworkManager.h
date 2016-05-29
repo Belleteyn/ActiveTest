@@ -1,33 +1,33 @@
 #ifndef NETWORKMANAGER_H
 #define NETWORKMANAGER_H
 
+#include <functional>
+
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+
+#include <Message.h>
+
+enum class OpResult { Success, EmptyData, ParseError, RequestError };
+
+template <typename ...Args>
+using Callback = std::function<void(const OpResult& error, const Args& ... args)>;
 
 class NetworkManager : public QObject
 {
   Q_OBJECT
 public:
-  explicit NetworkManager(QObject *parent = 0);
+  explicit NetworkManager(QObject *parent = 0);  
 
 public:
-  inline void emptyXmlRequest() { ping(); }
-  inline void messageSetConfirm(long id) { messageShown(id); }
-  inline void userMessageRequest() { getMessages(); }
-  inline void serviceMessageRequest() { getServiceMessage(); }
+  void emptyXmlRequest(const Callback<>& callback);
+  void userMessageRequest(const Callback<const Message&>& callback);
+  void messageSetConfirm(long id, const Callback<>& callback);
+  void serviceMessageRequest(const Callback<const Message&>& callback);
 
-  void ping();
-  void getMessages();
-  void messageShown(long id);
-  void getServiceMessage();
-
-  void sendMessageToMobile(const QByteArray& urlentext, long id, int priority, const QString& phone, const QTime& time);
-  void sendMessageToMobile(const QString& text, long id, int priority, const QString& phone, const QTime& time);
-
-  // не уверен надо ли это
-  void sendServiceMessageToMobile(const QByteArray& urlentext, const QTime& time);
-  void sendServiceMessageToMobile(const QString& text, const QTime& time);
+  void sendMessageToMobile(const Message& message);
+  void sendServiceMessageToMobile(const Message& message);
 
 signals:
   void emptyXml();
@@ -46,8 +46,12 @@ signals:
 
 private:
   QNetworkReply* sendRequest(const char* type);
-  void parseMessageXml(const QByteArray& xmlString);
-  void parseServiceMessageXml(const QByteArray& xmlString);
+
+  template <typename ParseCallback>
+  void parseMessageXml(const QByteArray& xmlString, const ParseCallback& callback);
+
+  template <typename ParseCallback>
+  void parseServiceMessageXml(const QByteArray& xmlString, const ParseCallback& callback);
 
 private:
   QNetworkAccessManager* manager_;
