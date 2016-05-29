@@ -52,26 +52,6 @@ bool Boss::init()
     return false;
   }
 
-  QObject::connect(networkManager_, &NetworkManager::emptyXml, this, &Boss::onEmptyXml);
-  QObject::connect(networkManager_, &NetworkManager::emptyMessageXml, this, &Boss::onEmptyMessageXml);
-  QObject::connect(networkManager_, &NetworkManager::serviceMessage, this, &Boss::onServiceMessageReceived);
-  QObject::connect(networkManager_, &NetworkManager::userMessage, this, &Boss::onUserMessageReceived);
-
-  QObject::connect(networkManager_, &NetworkManager::pingError, this, &Boss::onServerError);
-  QObject::connect(networkManager_, &NetworkManager::messageError, this, &Boss::onServerError);
-  QObject::connect(networkManager_, &NetworkManager::serviceMessageError, this, &Boss::onServerError);
-  QObject::connect(networkManager_, &NetworkManager::messageConfirmError, this, &Boss::onServerError);
-
-  QObject::connect(networkManager_, &NetworkManager::mobileMessageError, this, &Boss::onMobileError);
-  QObject::connect(networkManager_, &NetworkManager::parseMessageError, this, &Boss::onParseError);
-  QObject::connect(networkManager_, &NetworkManager::parseServiceMessageError, this, &Boss::onParseError);
-
-
-  QObject::connect(serverTest_, &ServerTest::emptyXml, this, &Boss::onEmptyXml);
-  QObject::connect(serverTest_, &ServerTest::emptyMessageXml, this, &Boss::onEmptyMessageXml);
-  QObject::connect(serverTest_, &ServerTest::serviceMessage, this, &Boss::onServiceMessageReceived);
-  QObject::connect(serverTest_, &ServerTest::userMessage, this, &Boss::onUserMessageReceived);
-
   QObject::connect(smsObjectManager_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
   QObject::connect(smsObjectManager_, SIGNAL(messageSet(long)), this, SLOT(onMessageSet(long)));
   QObject::connect(smsObjectManager_, SIGNAL(messageDone(long)), this, SLOT(onMessageDone(long)));
@@ -88,8 +68,28 @@ void Boss::onTitleCheck(bool isTitleAlive)
     if (!isConfirmed_)
     {
       isConfirmed_ = true;
-      //networkManager_->emptyXmlRequest();
-      serverTest_->emptyXmlRequest();
+
+      networkManager_->emptyXmlRequest([this](const OpResult& opResult)
+      {
+        switch (opResult)
+        {
+          case OpResult::EmptyData:
+          case OpResult::Success:
+          {
+            onEmptyXml();
+          }
+          break;
+
+          case OpResult::RequestError:
+          {
+            onServerError();
+          }
+          break;
+
+          case OpResult::ParseError:
+          break;
+        }
+      });
     }
   }
   else
@@ -106,10 +106,26 @@ void Boss::onMessageSet(long id)
 {
   if (!unshownMessages_->isEmpty())
   {
-    MessageInfo message = unshownMessages_->first();
+    Message message = unshownMessages_->first();
     if (message.id == id)
     {
-      networkManager_->messageSetConfirm(id);
+      networkManager_->messageSetConfirm(id, [this](const OpResult& opResult)
+      {
+        switch (opResult)
+        {
+          case OpResult::EmptyData:
+          case OpResult::Success:
+          case OpResult::ParseError:
+          break;
+
+          case OpResult::RequestError:
+          {
+            onServerError();
+          }
+          break;
+        }
+      });
+
       messageChanged(message.id, message.text, message.priority);
     }
     else
@@ -127,7 +143,7 @@ void Boss::onMessageDone(long id)
 {
   if (!unshownMessages_->isEmpty())
   {
-    MessageInfo message = unshownMessages_->first();
+    Message message = unshownMessages_->first();
     if (message.id == id)
     {
       unshownMessages_->dequeue();
@@ -159,31 +175,83 @@ void Boss::onEmptyXml()
   }
   else
   {
-    networkManager_->userMessageRequest();
-    serverTest_->userMessageRequest();
+    networkManager_->userMessageRequest([this](const OpResult& opResult, const Message& message)
+    {
+      switch (opResult)
+      {
+        case OpResult::EmptyData:
+        {
+          onEmptyMessageXml();
+        }
+        break;
+
+        case OpResult::Success:
+        {
+          onUserMessageReceived(message);
+        }
+        break;
+
+        case OpResult::RequestError:
+        {
+          onServerError();
+        }
+        break;
+
+        case OpResult::ParseError:
+        {
+          onParseError();
+        }
+        break;
+      }
+    });
   }
 }
 
 void Boss::onEmptyMessageXml()
 {
   serverActive(true);
-  networkManager_->serviceMessageRequest();
-  serverTest_->serviceMessageRequest();
+
+  networkManager_->serviceMessageRequest([this](const OpResult& opResult, const Message& message)
+  {
+    switch (opResult)
+    {
+      case OpResult::EmptyData:
+      break;
+
+      case OpResult::Success:
+      {
+        onServiceMessageReceived(message);
+      }
+      break;
+
+      case OpResult::RequestError:
+      {
+        onServerError();
+      }
+      break;
+
+      case OpResult::ParseError:
+      {
+        onParseError();
+      }
+      break;
+    }
+  });
 }
 
-void Boss::onUserMessageReceived(long id, const QByteArray &message, const QTime &time, long priority)
+void Boss::onUserMessageReceived(const Message& message)
 {
   serverActive(true);
   //addSplittedMessage(id, message, time, priority);
-  unshownMessages_->add(id, message, time, priority);
+  unshownMessages_->add(message);
   showNextMessage();
 }
 
-void Boss::onServiceMessageReceived(long id, const QByteArray &message, const QTime &time)
+void Boss::onServiceMessageReceived(const Message& message)
 {
   serverActive(true);
   //addSplittedMessage(id, message, time);
-  unshownMessages_->add(id, message, time, 0);
+  unshownMessages_->add(message);
   showNextMessage();
 }
 
@@ -208,12 +276,41 @@ void Boss::showNextMessage()
   if (unshownMessages_->isEmpty())
   {
     messageChanged(-1, "", -1);
-    networkManager_->userMessageRequest();
-    serverTest_->userMessageRequest();
+
+    networkManager_->userMessageRequest([this](const OpResult& opResult, const Message& message)
+    {
+      switch (opResult)
+      {
+        case OpResult::EmptyData:
+        {
+          onEmptyMessageXml();
+        }
+        break;
+
+        case OpResult::Success:
+        {
+          onUserMessageReceived(message);
+        }
+        break;
+
+        case OpResult::RequestError:
+        {
+          onServerError();
+        }
+        break;
+
+        case OpResult::ParseError:
+        {
+          onParseError();
+        }
+        break;
+      }
+    });
+
     return;
   }
 
-  MessageInfo message = unshownMessages_->first();
+  Message message = unshownMessages_->first();
   smsObjectManager_->setMessage(message.id, message.text, message.priority);
 
   QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
@@ -221,7 +318,8 @@ void Boss::showNextMessage()
   if (isMobileUsing)
   {
     qDebug() << "mobile app is using";
-    //TODO send to mobile app
+
+    networkManager_->sendMessageToMobile(message);
   }
 }
 
