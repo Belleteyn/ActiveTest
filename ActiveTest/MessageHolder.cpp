@@ -10,7 +10,7 @@ MessageHolder::~MessageHolder()
 
 }
 
-void MessageHolder::add(const MessageInfo &message)
+void MessageHolder::add(const Message &message)
 {
   messageQueue_.enqueue(message);
 }
@@ -18,7 +18,7 @@ void MessageHolder::add(const MessageInfo &message)
 void MessageHolder::add(long id, const QByteArray &text, const QTime &receiveTime, long priority
                         , const QByteArray &nick, long senderNum)
 {
-  add(MessageInfo(id, text, nick, priority, senderNum, receiveTime));
+  add(Message(id, text, nick, priority, senderNum, receiveTime));
 }
 
 void MessageHolder::dequeue()
@@ -38,7 +38,7 @@ bool MessageHolder::isEmpty() const
   return messageQueue_.isEmpty();
 }
 
-const MessageInfo& MessageHolder::first() const
+const Message& MessageHolder::first() const
 {
   return messageQueue_.first();
 }

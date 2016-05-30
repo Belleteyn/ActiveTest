@@ -3,6 +3,8 @@
 
 #include <QObject>
 
+#include <Message.h>
+
 class Boss : public QObject
 {
   Q_OBJECT
@@ -28,8 +30,8 @@ private slots:
   //from server
   void onEmptyXml();
   void onEmptyMessageXml();
-  void onUserMessageReceived(long id, const QByteArray& message, const QTime& time, long priority);
-  void onServiceMessageReceived(long id, const QByteArray& message, const QTime& time);
+  void onUserMessageReceived(const Message& message);
+  void onServiceMessageReceived(const Message& message);
 
   void onServerError();
   void onMobileError();

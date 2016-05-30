@@ -30,7 +30,7 @@ NetworkManager::NetworkManager(QObject *parent)
   manager_ = new QNetworkAccessManager(this);
 }
 
-void NetworkManager::ping()
+void NetworkManager::emptyXmlRequest(const Callback<>& callback)
 {
   QNetworkReply* reply = sendRequest("PING");
   if (reply)
@@ -39,19 +39,26 @@ void NetworkManager::ping()
     {
       if(reply->error() == QNetworkReply::NoError)
       {
-        emptyXml();
+        if (callback)
+        {
+          callback(OpResult::Success);
+        }
       }
       else
       {
-        qCritical() << "gor error in PING";
-        pingError();
+        qCritical() << "gor error in PING" << reply->error();
+
+        if (callback)
+        {
+          callback(OpResult::RequestError);
+        }
       }
       reply->deleteLater();
     });
   }
 }
 
-void NetworkManager::getMessages()
+void NetworkManager::userMessageRequest(const Callback<const Message&>& callback)
 {
   QNetworkReply* reply = sendRequest("GET_MESSAGES");
   if (reply)
@@ -60,19 +67,22 @@ void NetworkManager::getMessages()
     {
       if(reply->error() == QNetworkReply::NoError)
       {
-        parseMessageXml(reply->readAll());
+        parseMessageXml(reply->readAll(), callback);
       }
       else
       {
         qWarning() << "gor error in GET_MESSAGES";
-        messageError();
+        if (callback)
+        {
+          callback(OpResult::RequestError, Message());
+        }
       }
       reply->deleteLater();
     });
   }
 }
 
-void NetworkManager::messageShown(long id)
+void NetworkManager::messageSetConfirm(long id, const Callback<>& callback)
 {
   QNetworkRequest request;
 
@@ -93,14 +103,18 @@ void NetworkManager::messageShown(long id)
       if(reply->error() != QNetworkReply::NoError)
       {
         qWarning() << "gor error in MESSAGE_SHOWN";
-        messageConfirmError();
+
+        if (callback)
+        {
+          callback(OpResult::RequestError);
+        }
       }
       reply->deleteLater();
     });
   }
 }
 
-void NetworkManager::getServiceMessage()
+void NetworkManager::serviceMessageRequest(const Callback<const Message&>& callback)
 {
   QNetworkReply* reply = sendRequest("GET_SERVICE_MESSAGE");
   if (reply)
@@ -109,19 +123,22 @@ void NetworkManager::getServiceMessage()
     {
       if(reply->error() == QNetworkReply::NoError)
       {
-        parseServiceMessageXml(reply->readAll());
+        parseServiceMessageXml(reply->readAll(), callback);
       }
       else
       {
         qWarning() << "gor error in GET_SERVICE_MESSAGE";
-        serviceMessageError();
+        if (callback)
+        {
+          callback(OpResult::RequestError, Message());
+        }
       }
       reply->deleteLater();
     });
   }
 }
 
-void NetworkManager::sendMessageToMobile(const QByteArray& urlentext, long id, int priority, const QString& phone, const QTime& time)
+void NetworkManager::sendMessageToMobile(const Message& message)
 {
   QNetworkRequest request;
 
@@ -129,11 +146,11 @@ void NetworkManager::sendMessageToMobile(const QByteArray& urlentext, long id, i
   request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
 
   QUrlQuery params;
-  params.addQueryItem("text", urlentext);
-  params.addQueryItem("id", QString::number(id));
-  params.addQueryItem("priority", QString::number(priority));
-  params.addQueryItem("phone", phone);
-  params.addQueryItem("time", time.toString());
+  params.addQueryItem("text", QUrl::toPercentEncoding(message.text));
+  params.addQueryItem("id", QString::number(message.id));
+  params.addQueryItem("priority", QString::number(message.priority));
+  params.addQueryItem("phone", QString::number(message.senderNum));
+  params.addQueryItem("time", message.receiveTime.toString());
 
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
@@ -143,19 +160,13 @@ void NetworkManager::sendMessageToMobile(const QByteArray& urlentext, long id, i
       if(reply->error() != QNetworkReply::NoError)
       {
         qWarning() << "gor error in sendMessageToMobile";
-        mobileMessageError();
       }
       reply->deleteLater();
     });
   }
 }
 
-void NetworkManager::sendMessageToMobile(const QString& text, long id, int priority, const QString& phone, const QTime& time)
-{
-  sendMessageToMobile(QUrl::toPercentEncoding(text), id, priority, phone, time);
-}
-
-void NetworkManager::sendServiceMessageToMobile(const QByteArray& urlentext, const QTime& time)
+void NetworkManager::sendServiceMessageToMobile(const Message& message)
 {
   QNetworkRequest request;
 
@@ -163,10 +174,10 @@ void NetworkManager::sendServiceMessageToMobile(const QByteArray& urlentext, con
   request.setHeader(QNetworkRequest::ContentTypeHeader, QVariant("application/x-www-form-urlencoded"));
 
   QUrlQuery params;
-  params.addQueryItem("text", urlentext);
+  params.addQueryItem("text", QUrl::toPercentEncoding(message.text));
   params.addQueryItem("id", QString::number(7777));
   params.addQueryItem("priority", QString::number(0));
-  params.addQueryItem("time", time.toString());
+  params.addQueryItem("time", message.receiveTime.toString());
 
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
@@ -176,16 +187,10 @@ void NetworkManager::sendServiceMessageToMobile(const QByteArray& urlentext, con
       if(reply->error() != QNetworkReply::NoError)
       {
         qWarning() << "gor error in sendServiceMessageToMobile";
-        mobileMessageError();
       }
       reply->deleteLater();
     });
   }
-}
-
-void NetworkManager::sendServiceMessageToMobile(const QString& text, const QTime& time)
-{
-  sendServiceMessageToMobile(QUrl::toPercentEncoding(text), time);
 }
 
 QNetworkReply* NetworkManager::sendRequest(const char* type)
@@ -203,7 +208,8 @@ QNetworkReply* NetworkManager::sendRequest(const char* type)
   return manager_->post(request, params.query().toUtf8());
 }
 
-void NetworkManager::parseMessageXml(const QByteArray& xmlString)
+template <typename ParseCallback>
+void NetworkManager::parseMessageXml(const QByteArray& xmlString, const ParseCallback& callback)
 {
   QXmlStreamReader xml(xmlString);
 
@@ -224,10 +230,17 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString)
           }
 #endif
 
-          userMessage(attributes.value("id").toLong()
-            , QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8()
-            , QTime::fromString(attributes.value("rcv_time").toString())
-            , attributes.value("priority").toInt());
+          if (callback)
+          {
+            Message message;
+
+            message.id = attributes.value("id").toLong();
+            message.text = QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8();
+            message.receiveTime = QTime::fromString(attributes.value("rcv_time").toString());
+            message.priority = attributes.value("priority").toInt();
+
+            callback(OpResult::Success, message);
+          }
 
           return;
         }
@@ -235,23 +248,34 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString)
       else
       {
         qDebug() << "cant find ~message~ tag";
-        emptyMessageXml();
+
+        if (callback)
+        {
+          callback(OpResult::EmptyData, Message());
+        }
       }
     }
     else
     {
       qWarning() << "cant find ~messages~ tag";
-      parseMessageError();
+      if (callback)
+      {
+        callback(OpResult::ParseError, Message());
+      }
     }
   }
   else
   {
     qWarning() << "empty xml";
-    parseMessageError();
+    if (callback)
+    {
+      callback(OpResult::ParseError, Message());
+    }
   }
 }
 
-void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString)
+template <typename ParseCallback>
+void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString, const ParseCallback& callback)
 {
   QXmlStreamReader xml(xmlString);
 
@@ -268,21 +292,34 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString)
       }
 #endif
 
-      serviceMessage(attributes.value("id").toLong()
-        , QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8()
-        , QTime());
+      if (callback)
+      {
+        Message message;
+
+        message.id = attributes.value("id").toLong();
+        message.text = QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8();
+        message.priority = 0;
+
+        callback(OpResult::Success, message);
+      }
 
       return;
     }
     else
     {
       qWarning() << "cant find ~message~ tag";
-      parseServiceMessageError();
+      if (callback)
+      {
+        callback(OpResult::ParseError, Message());
+      }
     }
   }
   else
   {
     qWarning() << "empty xml";
-    parseServiceMessageError();
+    if (callback)
+    {
+      callback(OpResult::ParseError, Message());
+    }
   }
 }
