@@ -47,8 +47,6 @@ private:
   bool isConfirmed_;
 
   class MessageHolder* unshownMessages_;
-
-  class ServerTest* serverTest_;
   class NetworkManager* networkManager_;
 };
 

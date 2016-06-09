@@ -32,7 +32,6 @@ SOURCES += main.cpp \
     SMSObjectManager.cpp \
     Boss.cpp \
     MessageHolder.cpp \
-    servertest.cpp \
     SystemTray.cpp \
     LogHelper.cpp
 
@@ -45,7 +44,6 @@ HEADERS += \
     Boss.h \
     SMSCallback.h \
     MessageHolder.h \
-    servertest.h \
     SystemTray.h \
     Message.h \
     LogHelper.h

@@ -8,8 +8,6 @@
 #include <MessageHolder.h>
 #include <NetworkManager.h>
 
-#include <servertest.h>
-
 #include <LogHelper.h>
 
 Boss::Boss(QObject *parent)
@@ -17,7 +15,6 @@ Boss::Boss(QObject *parent)
   , smsObjectManager_(nullptr)
   , isConfirmed_(false)
   , unshownMessages_(nullptr)
-  , serverTest_(nullptr)
   , networkManager_(nullptr)
 {}
 
@@ -39,7 +36,6 @@ bool Boss::init()
     unshownMessages_ = new MessageHolder();
     smsObjectManager_ = new SMSObjectManager(this);
     networkManager_ = new NetworkManager(this);
-    serverTest_ = new ServerTest(this);
   }
   catch (std::bad_alloc&)
   {
