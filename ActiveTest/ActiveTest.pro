@@ -33,7 +33,8 @@ SOURCES += main.cpp \
     Boss.cpp \
     MessageHolder.cpp \
     servertest.cpp \
-    SystemTray.cpp
+    SystemTray.cpp \
+    LogHelper.cpp
 
 HEADERS += \
     pch.h \
@@ -46,8 +47,8 @@ HEADERS += \
     MessageHolder.h \
     servertest.h \
     SystemTray.h \
-    logger.h \
-    Message.h
+    Message.h \
+    LogHelper.h
 
 RESOURCES += \
     qml.qrc

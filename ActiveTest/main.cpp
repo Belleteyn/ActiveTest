@@ -5,6 +5,7 @@
 #include <QDebug>
 
 #include <spdlog/spdlog.h>
+#include <LogHelper.h>
 
 #include <Boss.h>
 #include <SystemTray.h>
@@ -20,11 +21,16 @@ int main(int argc, char *argv[])
 #endif
     sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_st>("log", "txt", 7, 00, true));
 
-    spdlog::create("net", std::begin(sinks), std::end(sinks));
-    spdlog::create("sms", std::begin(sinks), std::end(sinks));
-    spdlog::create("app", std::begin(sinks), std::end(sinks));
+    Loggers::net = spdlog::create("net", std::begin(sinks), std::end(sinks));
+    Loggers::sms = spdlog::create("sms", std::begin(sinks), std::end(sinks));
+    Loggers::app = spdlog::create("app", std::begin(sinks), std::end(sinks));
 
     spdlog::set_level(spdlog::level::trace);
+
+    if (!(Loggers::net && Loggers::sms && Loggers::app))
+    {
+      qFatal("log creation failed");
+    }
 
 #ifdef LOG_DEBUG
     spdlog::set_pattern("[%T.%e] [%n] [%l] [thread: %t] %v");
@@ -32,16 +38,16 @@ int main(int argc, char *argv[])
     spdlog::set_pattern("[%Y-%m-%d %T.%e] [%n] %v");
 #endif
   }
-  catch (const spdlog::spdlog_ex& ex)
+  catch (const spdlog::spdlog_ex&)
   {
-    qDebug() << "Log failed: " << ex.what();
+    qFatal("log creation failed");
   }
 
   QGuiApplication a(argc, argv);
 
   QObject::connect(&a, &QGuiApplication::aboutToQuit, []()
   {
-    spdlog::get("app")->info() << "application stopped";
+    Loggers::app->info() << "application stopped";
   });
 
   Boss boss;
@@ -58,7 +64,7 @@ int main(int argc, char *argv[])
 
     try
     {
-      spdlog::get("app")->info() << "application started";
+      Loggers::app->info() << "application started";
     }
     catch (const spdlog::spdlog_ex& ex)
     {
