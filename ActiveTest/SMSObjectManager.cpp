@@ -6,6 +6,8 @@
 
 #include <SMSCallback.h>
 
+#include <LogHelper.h>
+
 SMSObjectManager::SMSObjectManager(QObject *parent)
   : QObject(parent)
   , iSMSObjectManager_(NULL)
@@ -41,11 +43,11 @@ bool SMSObjectManager::initSmsObjectManager()
   HRESULT hr = iSMSObjectManager_.CreateInstance(CLSID_SMSObjectsManager);
   if (!FAILED(hr))
   {
-    qDebug() << "successful creation of smsObjectManager";
+    Loggers::sms->debug() << "successful creation of smsObjectManager";
     return true;
   }
 
-  qFatal("failed smsObjectManager");
+  Loggers::sms->error() << "failed smsObjectManager";
   return false;
 }
 
@@ -55,7 +57,7 @@ void SMSObjectManager::showSmsObjects()
   HRESULT hr = iSMSObjectManager_->GetSMSObjectsCount(&nObjectsCount);
   if (FAILED(hr))
   {
-    qCritical() << "failed GetSMSObjectsCount";
+    Loggers::sms->critical() << "failed GetSMSObjectsCount";
   }
 
   for (INT i = 0; i < nObjectsCount; i++)
@@ -65,7 +67,7 @@ void SMSObjectManager::showSmsObjects()
     if (!FAILED(hr))
     {
       QString qstr((QChar*)sName, ::SysStringLen(sName));
-      qDebug() << "found sms object " << i << qstr;
+      Loggers::sms->debug() << "found sms object " << i << qstr;
     }
   }
 }
@@ -89,18 +91,18 @@ bool SMSObjectManager::testMessage(long id, const QByteArray &message, long prio
 
     if (FAILED(hr))
     {
-      qWarning() << "failed testing message" << id;
+      Loggers::sms->warn() << "failed testing message" << id;
       return false;
     }
     else
     {
-      qDebug() << "succes testing message" << id;
+      Loggers::sms->debug() << "succes testing message" << id;
       return (testResult <= 1.0f);
     }
   }
   else
   {
-    qWarning() << "error testing message: no sms object";
+    Loggers::sms->warn() << "error testing message: no sms object";
     //that message will be shown after iSMSObject was fixed. do nothing.
     return false;
   }
@@ -121,18 +123,18 @@ void SMSObjectManager::setMessage(long id, const QByteArray &message, long prior
 
     if (FAILED(hr))
     {
-      qDebug() << "failed set message" << id;
+      Loggers::sms->debug() << "failed set message" << id;
       messageFailed(id);
     }
     else
     {
-      qDebug() << "succes set message" << id;
+      Loggers::sms->debug() << "succes set message" << id;
       messageSet(id);
     }
   }
   else
   {
-    qWarning() << "error showing message: no sms object";
+    Loggers::sms->warn() << "error showing message: no sms object";
     //that message will be shown after iSMSObject was fixed. do nothing.
   }
 }
@@ -148,14 +150,14 @@ void SMSObjectManager::onTitleMonitorTimer()
   SysFreeString(bSmsObjectName);
   if (FAILED(hr))
   {
-    qDebug() << "failed to find" << smsObjectName;
+    Loggers::sms->debug() << "failed to find" << smsObjectName;
     resetSMSObject();
     return;
   }
 
   if (iSMSObject_ == NULL || iSMSObject_ != iUnknown)
   {
-    qDebug() << "update SMS object" << smsObjectName;
+    Loggers::sms->debug() << "update SMS object" << smsObjectName;
     updateSMSObject(iUnknown);
   }
 
@@ -173,19 +175,19 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
   iSMSObject_ = iUnknown;
   if (iSMSObject_ == NULL)
   {
-    qWarning() << "tried to set sms object to NULL";
+    Loggers::sms->warn() << "tried to set sms object to NULL";
     return;
   }
 
   LONG styleCount;
   iSMSObject_->GetStyleCount(&styleCount);
-  qDebug() << "sms object holds" << styleCount << "styles";
+  Loggers::sms->debug() << "sms object holds" << styleCount << "styles";
 
   HRESULT hr = CComObject<CSMSCallBack>::CreateInstance
       (reinterpret_cast<CComObject<CSMSCallBack>**>(&iSMSCallBack_));
   if (FAILED(hr))
   {
-    qCritical() << "failed create smsCallback";
+    Loggers::sms->critical() << "failed create smsCallback";
     resetSMSObject();
     resetCallback();
     return;
@@ -197,7 +199,7 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
   hr = iSMSCallBack_->QueryInterface(IID_IUnknown,(void**)&spIUnk);
   if (FAILED(hr))
   {
-    qCritical() << "failed query smsCallback";
+    Loggers::sms->critical() << "failed query smsCallback";
     resetSMSObject();
     resetCallback();
     return;
@@ -206,26 +208,26 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
   hr = iSMSObject_->Advise(spIUnk);
   if (FAILED(hr))
   {
-    qCritical() << "failed to advise sms callback";
+    Loggers::sms->critical() << "failed to advise sms callback";
     resetSMSObject();
     resetCallback();
     return;
   }
   else
   {
-    qDebug() << "Callback successfully created";
+    Loggers::sms->debug() << "Callback successfully created";
   }
 
   iSMSCallBack_->setCallback([this](long id)
   {
-    qDebug() << "done message" << id;
+    Loggers::sms->debug() << "done message" << id;
     messageDone(id);
   });
 }
 
 void SMSObjectManager::resetSMSObject()
 {
-  qDebug() << "reset SMS object";
+  Loggers::sms->debug() << "reset SMS object";
   if (iSMSObject_ != NULL)
   {
     iSMSObject_->UnAdvise();

@@ -10,6 +10,8 @@
 
 #include <servertest.h>
 
+#include <LogHelper.h>
+
 Boss::Boss(QObject *parent)
   : QObject(parent)
   , smsObjectManager_(nullptr)
@@ -17,8 +19,7 @@ Boss::Boss(QObject *parent)
   , unshownMessages_(nullptr)
   , serverTest_(nullptr)
   , networkManager_(nullptr)
-{
-}
+{}
 
 Boss::~Boss()
 {
@@ -42,13 +43,13 @@ bool Boss::init()
   }
   catch (std::bad_alloc&)
   {
-    qFatal("Fatal error: unable to create SMSObjectManager or MessageHolder;");
+    Loggers::app->error() << "Fatal error: unable to create SMSObjectManager or MessageHolder;";
     return false;
   }
 
   if (!smsObjectManager_->init())
   {
-    qFatal("Fatal error: unable to init SMSObjectManager;");
+    Loggers::app->error() << "Fatal error: unable to init SMSObjectManager;";
     return false;
   }
 
@@ -94,7 +95,7 @@ void Boss::onTitleCheck(bool isTitleAlive)
   }
   else
   {
-    qDebug() << "title is dead";
+    Loggers::app->debug() << "title is dead";
     isConfirmed_ = false;
     //TODO is server need to know this?
   }
@@ -130,12 +131,12 @@ void Boss::onMessageSet(long id)
     }
     else
     {
-      qWarning() << "WTF? top message is not equal to set; ignore";
+      Loggers::app->warn() << "WTF? top message is not equal to set; ignore";
     }
   }
   else
   {
-    qWarning() << "WTF? Message set, but queue is empty; ignore";
+    Loggers::app->warn() << "WTF? Message set, but queue is empty; ignore";
   }
 }
 
@@ -151,18 +152,18 @@ void Boss::onMessageDone(long id)
     }
     else
     {
-      qWarning() << "top message is not equal to done. it can be when app started while message have been shown; ignore";
+      Loggers::app->warn() << "top message is not equal to done. it can be when app started while message have been shown; ignore";
     }
   }
   else
   {
-    qWarning() << "WTF? Message done, but queue is empty; ignore";
+    Loggers::app->warn() << "WTF? Message done, but queue is empty; ignore";
   }
 }
 
 void Boss::onMessageFailed(long id)
 {
-  qWarning() << "failed to set message" << id << ", will try again on message callback";
+  Loggers::app->warn() << "failed to set message" << id << ", will try again on message callback";
 }
 
 void Boss::onEmptyXml()
@@ -170,7 +171,7 @@ void Boss::onEmptyXml()
   serverActive(true);
   if (!unshownMessages_->isEmpty())
   {
-    qWarning() << "some messages was not shown, show them first";
+    Loggers::app->warn() << "some messages was not shown, show them first";
     showNextMessage();
   }
   else
@@ -317,7 +318,7 @@ void Boss::showNextMessage()
   bool isMobileUsing = settings.value("Mobile/use").toBool();
   if (isMobileUsing)
   {
-    qDebug() << "mobile app is using";
+    Loggers::app->debug() << "mobile app is using";
 
     networkManager_->sendMessageToMobile(message);
   }
