@@ -6,6 +6,8 @@ PRECOMPILED_HEADER = pch.h
 
 TARGET = SMSClient
 
+include(dependencies.pri)
+
 CONFIG(debug, debug|release) {
 
   message(debug build)

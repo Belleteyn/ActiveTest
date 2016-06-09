@@ -1,35 +1,48 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QDir>
+#include <QDebug>
+
+#include <spdlog/spdlog.h>
 
 #include <Boss.h>
 #include <SystemTray.h>
 
-#include <QDir>
-#include <logger.h>
-
 int main(int argc, char *argv[])
 {
+  try
+  {
+    std::vector<spdlog::sink_ptr> sinks;
+
 #ifdef LOG_DEBUG
-  qInstallMessageHandler(&Logger::fullOutput);
-#elif LOG_RELEASE
-  qInstallMessageHandler(&Logger::compactOutput);
+    sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
 #endif
+    sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_st>("log", "txt", 7, 00, true));
+
+    spdlog::create("net", std::begin(sinks), std::end(sinks));
+    spdlog::create("sms", std::begin(sinks), std::end(sinks));
+    spdlog::create("app", std::begin(sinks), std::end(sinks));
+
+    spdlog::set_level(spdlog::level::trace);
+
+#ifdef LOG_DEBUG
+    spdlog::set_pattern("[%T.%e] [%n] [%l] [thread: %t] %v");
+#elif LOG_RELEASE
+    spdlog::set_pattern("[%Y-%m-%d %T.%e] [%n] %v");
+#endif
+  }
+  catch (const spdlog::spdlog_ex& ex)
+  {
+    qDebug() << "Log failed: " << ex.what();
+  }
 
   QGuiApplication a(argc, argv);
 
-  QString logDirName("SMSLogs");
-  QDir logDir(QGuiApplication::applicationDirPath());
-  if (!logDir.exists(logDirName))
+  QObject::connect(&a, &QGuiApplication::aboutToQuit, []()
   {
-    logDir.mkpath(logDirName);
-  }
-  logDir.cd(logDirName);
-  QString logFileName = QString(logDir.absolutePath() + "/log_%1.txt")
-    .arg(QDateTime::currentDateTime().toString("yyyy_MM_dd_hh-mm-ss"));
-
-  Logger& logger = Logger::instance();
-  logger.open(logFileName);
+    spdlog::get("app")->info() << "application stopped";
+  });
 
   Boss boss;
   if (boss.init())
@@ -42,8 +55,19 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty("systemTray", &systemTray);
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+
+    try
+    {
+      spdlog::get("app")->info() << "application started";
+    }
+    catch (const spdlog::spdlog_ex& ex)
+    {
+      qDebug() << "Log failed: " << ex.what();
+    }
+
     return a.exec();
   }
 
-  return a.quit();
+  a.quit();
+  return -1;
 }
