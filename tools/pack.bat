@@ -1,0 +1,1 @@
+for /R %%f in (*.dll) do upx --best %%f
