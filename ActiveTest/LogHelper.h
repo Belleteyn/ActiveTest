@@ -8,9 +8,12 @@
 namespace Loggers
 {
   extern std::shared_ptr<spdlog::logger> app;
+
   extern std::shared_ptr<spdlog::logger> sms;
   extern std::shared_ptr<spdlog::logger> net;
 }
+
+// stream operators
 
 std::ostream& operator<<(std::ostream& os, const QString& qString);
 

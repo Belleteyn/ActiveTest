@@ -3,6 +3,7 @@
 namespace Loggers
 {
   std::shared_ptr<spdlog::logger> app;
+
   std::shared_ptr<spdlog::logger> sms;
   std::shared_ptr<spdlog::logger> net;
 }
