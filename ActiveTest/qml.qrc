@@ -2,5 +2,8 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>icon.ico</file>
+        <file>DesignLabel.qml</file>
+        <file>LogDelegate.qml</file>
+        <file>SectionHeader.qml</file>
     </qresource>
 </RCC>
