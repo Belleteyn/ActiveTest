@@ -25,6 +25,16 @@ int main(int argc, char *argv[])
     Loggers::app->info() << "application stopped";
   });
 
+  QString logDirName("SMSLogs");
+  QDir logDir(QGuiApplication::applicationDirPath());
+  if (!logDir.exists(logDirName))
+  {
+    logDir.mkpath(logDirName);
+  }
+  logDir.cd(logDirName);
+
+  QString logPath = logDir.absolutePath() + "/log";
+
   Boss boss;
 
   try
@@ -34,7 +44,7 @@ int main(int argc, char *argv[])
 #ifdef LOG_DEBUG
     sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
 #endif
-    sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("log", "txt", 7, 00, true));
+    sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>(logPath.toStdString(), "txt", 7, 00, true));
 
     sinks.push_back(std::make_shared<handled_sink_mt>([&boss](const std::string& tag, const std::string& message)
     {
