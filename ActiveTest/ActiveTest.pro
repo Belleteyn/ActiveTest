@@ -46,7 +46,8 @@ HEADERS += \
     MessageHolder.h \
     SystemTray.h \
     Message.h \
-    LogHelper.h
+    LogHelper.h \
+    HandledSink.h
 
 RESOURCES += \
     qml.qrc

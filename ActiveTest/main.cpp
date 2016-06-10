@@ -1,25 +1,45 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QTranslator>
 #include <QDir>
 #include <QDebug>
 
 #include <spdlog/spdlog.h>
 #include <LogHelper.h>
+#include <HandledSink.h>
 
 #include <Boss.h>
 #include <SystemTray.h>
 
 int main(int argc, char *argv[])
 {
+  QGuiApplication a(argc, argv);
+
+  QTranslator translator;
+  translator.load("activetest_ru");
+  a.installTranslator(&translator);
+
+  QObject::connect(&a, &QGuiApplication::aboutToQuit, []()
+  {
+    Loggers::app->info() << "application stopped";
+  });
+
+  Boss boss;
+
   try
   {
     std::vector<spdlog::sink_ptr> sinks;
 
 #ifdef LOG_DEBUG
-    sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_st>());
+    sinks.push_back(std::make_shared<spdlog::sinks::stdout_sink_mt>());
 #endif
-    sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_st>("log", "txt", 7, 00, true));
+    sinks.push_back(std::make_shared<spdlog::sinks::daily_file_sink_mt>("log", "txt", 7, 00, true));
+
+    sinks.push_back(std::make_shared<handled_sink_mt>([&boss](const std::string& tag, const std::string& message)
+    {
+      boss.appendLogString(QString::fromStdString(tag), QString::fromStdString(message));
+    }));
 
     Loggers::net = spdlog::create("net", std::begin(sinks), std::end(sinks));
     Loggers::sms = spdlog::create("sms", std::begin(sinks), std::end(sinks));
@@ -43,14 +63,6 @@ int main(int argc, char *argv[])
     qFatal("log creation failed");
   }
 
-  QGuiApplication a(argc, argv);
-
-  QObject::connect(&a, &QGuiApplication::aboutToQuit, []()
-  {
-    Loggers::app->info() << "application stopped";
-  });
-
-  Boss boss;
   if (boss.init())
   {
     QQmlApplicationEngine engine;
@@ -62,14 +74,9 @@ int main(int argc, char *argv[])
 
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-    try
-    {
-      Loggers::app->info() << "application started";
-    }
-    catch (const spdlog::spdlog_ex& ex)
-    {
-      qDebug() << "Log failed: " << ex.what();
-    }
+    Loggers::app->info() << "application started";
+
+    Loggers::app->info() << "asdfasdf";
 
     return a.exec();
   }
