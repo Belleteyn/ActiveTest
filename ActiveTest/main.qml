@@ -1,25 +1,24 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
 import QtQuick.Layouts 1.1
 
 ApplicationWindow {
     id: root
+
     visible: true
-    width: 500
-    height: 200
-    title: "SMSClient"
 
-    Layout.minimumHeight: 100
-    Layout.minimumWidth: 400
+    width: 480
+    height: 640
 
-    property bool active: false
+    title: qsTr("SMSClient")
+
+    property bool titleActive: false
     property bool serverActive: false
 
     property int id: 0
     property int priority: 0
     property string message: ""
-
-    property string error: ""
 
     onVisibilityChanged: {
         if (root.visibility === 3) {
@@ -29,19 +28,17 @@ ApplicationWindow {
 
     Connections {
         target: boss
+        onAppendLogString: {
+            logModel.addMessage(tag, message);
+        }
 
         onTitleActive: {
-            active = isTitleActive;
+            titleActive = isTitleActive;
 
-            if (!active) {
-                error = "Ошибка: неактивен титровальный элемент";
+            if (!titleActive) {
                 if(root.visibility === 0) {
                     root.show();
                 }
-            }
-            else {
-                if (serverActive)
-                    error = "";
             }
         }
 
@@ -49,14 +46,9 @@ ApplicationWindow {
             serverActive = isServerActive;
 
             if (!serverActive) {
-                error = "Ошибка при отправке запроса";
                 if(root.visibility === 0) {
                     root.show();
                 }
-            }
-            else {
-                if (active)
-                    error = "";
             }
         }
 
@@ -79,73 +71,138 @@ ApplicationWindow {
         }
     }
 
-    RowLayout {
-        anchors.fill: parent
+    ListModel {
+        id: logModel
 
-        ColumnLayout {
-            id: firstCol
+        property int maxCount: 300
 
-            Layout.fillHeight: true
-            Text { text: "Титровальный элемент активен:" }
-            Text { text: "Сервер активен:" }
-            Text { text: "Текущее сообщение:" }
-            Rectangle {
-                Layout.fillHeight: true
-                color: "transparent"
+        function addMessage(tag, message) {
+            if (count == maxCount) {
+                remove(0, 1);
             }
-        }
-
-        ColumnLayout {
-            id: secondCol
-            width: root.width - firstCol.width
-            Layout.fillHeight: true
-
-            Text { text: active.toString() }
-            Text { text: serverActive.toString() }
-
-            RowLayout {
-                Text { text: "id:" }
-                Text { text: id.toString() }
-            }
-
-            RowLayout {
-                Text { text: "приоритет:" }
-                Text { text: priority.toString() }
-            }
-
-            Rectangle {
-                //width: secondCol.width - 5
-                Layout.fillHeight: true
-                Layout.fillWidth: true
-                color: "transparent"
-
-                Text {
-                    id: messageText
-                    text: message
-                    wrapMode: Text.Wrap;
-
-                    width: parent.width
-                    height: parent.height
-                }
-            }
+            append({"tag": tag, "message": message});
+            logView.positionViewAtEnd();
         }
     }
 
-    Rectangle {
-        height: parent.height
-        width: parent.width
-        color: "transparent"
+    ColumnLayout {
+        anchors.fill: parent
 
-        Text {
+        spacing: 0
+
+        SectionHeader {
+            Layout.fillWidth: true
+            height: 25
+
+            text: qsTr("Status")
+        }
+
+        GridLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Layout.alignment: Qt.AlignCenter
+
+            columns: 2
+            rows: 2
+
+            columnSpacing: 10
+
+            DesignLabel { text: qsTr("Title") + ":";  Layout.alignment: Qt.AlignRight}
+            DesignLabel {
+                text: root.titleActive ? qsTr("active") : qsTr("not active")
+                color: root.titleActive ? "green" : "red"
+                font.bold: true
+            }
+
+            DesignLabel { text:qsTr("Server") + ":";  Layout.alignment: Qt.AlignRight }
+            DesignLabel {
+                text: root.serverActive ? qsTr("active") : qsTr("not active")
+                color: root.serverActive ? "green" : "red"
+                font.bold: true
+            }
+        }
+
+        SectionHeader {
+            Layout.fillWidth: true
+            height: 25
+
+            text: qsTr("Current message")
+        }
+
+        GridLayout {
+
+            Layout.fillWidth: true
+            Layout.fillHeight: false
+            Layout.alignment: Qt.AlignCenter
+
+            columns: 2
+            rows: 3
+
+            columnSpacing: 10
+
+            DesignLabel { text: qsTr("id") + ":"; Layout.alignment: Qt.AlignRight }
+            DesignLabel { text: root.id }
+
+            DesignLabel { text: qsTr("priority") + ":"; Layout.alignment: Qt.AlignRight }
+            DesignLabel { text: root.priority }
+
+            DesignLabel { text: qsTr("message") + ":"; Layout.alignment: Qt.AlignRight }
+            DesignLabel { text: root.message }
+        }
+
+        SectionHeader {
+            Layout.fillWidth: true
+            height: 25
+
+            text: qsTr("Log")
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 25
+
+            LogDelegate {
+                anchors.fill: parent
+
+                time: qsTr("time")
+                tag: qsTr("tag")
+                message: qsTr("message")
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            Layout.minimumWidth: 200
+            Layout.minimumHeight: 200
+
+        ScrollView {
             anchors.fill: parent
-            verticalAlignment: Text.AlignBottom
-            horizontalAlignment: Text.AlignHCenter
 
-            text: error
-            color: "red"
-            font.bold: true
-            font.pointSize: 18
-            wrapMode: Text.Wrap;
+            ListView {
+                id: logView
+
+                model: logModel
+
+                highlightMoveDuration: 0
+                highlightMoveVelocity: 0
+
+                delegate: LogDelegate {
+                    width: parent.width
+                    height: 25
+
+                    time: new Date().toTimeString()
+                    tag: model.tag
+                    message: model.message
+                }
+            }
+        }
+        }
+    }
+
+    style: ApplicationWindowStyle {
+        background: Rectangle {
+            color: "#fcfcfc"
         }
     }
 }

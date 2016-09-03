@@ -6,6 +6,8 @@ PRECOMPILED_HEADER = pch.h
 
 TARGET = SMSClient
 
+include(dependencies.pri)
+
 CONFIG(debug, debug|release) {
 
   message(debug build)
@@ -30,8 +32,8 @@ SOURCES += main.cpp \
     SMSObjectManager.cpp \
     Boss.cpp \
     MessageHolder.cpp \
-    servertest.cpp \
-    SystemTray.cpp
+    SystemTray.cpp \
+    LogHelper.cpp
 
 HEADERS += \
     pch.h \
@@ -42,10 +44,10 @@ HEADERS += \
     Boss.h \
     SMSCallback.h \
     MessageHolder.h \
-    servertest.h \
     SystemTray.h \
-    logger.h \
-    Message.h
+    Message.h \
+    LogHelper.h \
+    HandledSink.h
 
 RESOURCES += \
     qml.qrc

@@ -1,5 +1,7 @@
 #include "MessageHolder.h"
 
+#include <LogHelper.h>
+
 MessageHolder::MessageHolder()
 {
 
@@ -29,7 +31,7 @@ void MessageHolder::dequeue()
   }
   else
   {
-    qWarning() << "ERROR dequeue message. Something went wrong";
+    Loggers::app->warn() << "ERROR dequeue message. Something went wrong";
   }
 }
 

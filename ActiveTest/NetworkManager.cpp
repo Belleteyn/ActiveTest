@@ -8,6 +8,8 @@
 #include <QXmlStreamReader>
 #include <QSettings>
 
+#include <LogHelper.h>
+
 NetworkManager::NetworkManager(QObject *parent)
   : QObject(parent)
 {
@@ -46,7 +48,7 @@ void NetworkManager::emptyXmlRequest(const Callback<>& callback)
       }
       else
       {
-        qCritical() << "gor error in PING" << reply->error();
+        Loggers::app->critical() << "gor error in PING" << reply->error();
 
         if (callback)
         {
@@ -71,7 +73,7 @@ void NetworkManager::userMessageRequest(const Callback<const Message&>& callback
       }
       else
       {
-        qWarning() << "gor error in GET_MESSAGES";
+        Loggers::app->warn() << "gor error in GET_MESSAGES";
         if (callback)
         {
           callback(OpResult::RequestError, Message());
@@ -102,7 +104,7 @@ void NetworkManager::messageSetConfirm(long id, const Callback<>& callback)
     {
       if(reply->error() != QNetworkReply::NoError)
       {
-        qWarning() << "gor error in MESSAGE_SHOWN";
+        Loggers::app->warn() << "gor error in MESSAGE_SHOWN";
 
         if (callback)
         {
@@ -127,7 +129,7 @@ void NetworkManager::serviceMessageRequest(const Callback<const Message&>& callb
       }
       else
       {
-        qWarning() << "gor error in GET_SERVICE_MESSAGE";
+        Loggers::app->warn() << "gor error in GET_SERVICE_MESSAGE";
         if (callback)
         {
           callback(OpResult::RequestError, Message());
@@ -159,7 +161,7 @@ void NetworkManager::sendMessageToMobile(const Message& message)
     {
       if(reply->error() != QNetworkReply::NoError)
       {
-        qWarning() << "gor error in sendMessageToMobile";
+        Loggers::app->warn() << "gor error in sendMessageToMobile";
       }
       reply->deleteLater();
     });
@@ -186,7 +188,7 @@ void NetworkManager::sendServiceMessageToMobile(const Message& message)
     {
       if(reply->error() != QNetworkReply::NoError)
       {
-        qWarning() << "gor error in sendServiceMessageToMobile";
+        Loggers::app->warn() << "gor error in sendServiceMessageToMobile";
       }
       reply->deleteLater();
     });
@@ -223,13 +225,6 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString, const ParseCal
         {
           QXmlStreamAttributes attributes = xml.attributes();
 
-#ifdef LOG_DEBUG
-          for (const QXmlStreamAttribute& attribute : attributes)
-          {
-            qDebug() << attribute.name() << " : " << attribute.value();
-          }
-#endif
-
           if (callback)
           {
             Message message;
@@ -247,7 +242,7 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString, const ParseCal
       }
       else
       {
-        qDebug() << "cant find ~message~ tag";
+        Loggers::app->debug() << "cant find ~message~ tag";
 
         if (callback)
         {
@@ -257,7 +252,7 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString, const ParseCal
     }
     else
     {
-      qWarning() << "cant find ~messages~ tag";
+      Loggers::app->warn() << "cant find ~messages~ tag";
       if (callback)
       {
         callback(OpResult::ParseError, Message());
@@ -266,7 +261,7 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString, const ParseCal
   }
   else
   {
-    qWarning() << "empty xml";
+    Loggers::app->warn() << "empty xml";
     if (callback)
     {
       callback(OpResult::ParseError, Message());
@@ -285,13 +280,6 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString, const P
     {
       QXmlStreamAttributes attributes = xml.attributes();
 
-#ifdef LOG_DEBUG
-      for (const QXmlStreamAttribute& attribute : attributes)
-      {
-        qDebug() << attribute.name() << " : " << attribute.value();
-      }
-#endif
-
       if (callback)
       {
         Message message;
@@ -307,7 +295,7 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString, const P
     }
     else
     {
-      qWarning() << "cant find ~message~ tag";
+      Loggers::app->warn() << "cant find ~message~ tag";
       if (callback)
       {
         callback(OpResult::ParseError, Message());
@@ -316,7 +304,7 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString, const P
   }
   else
   {
-    qWarning() << "empty xml";
+    Loggers::app->warn() << "empty xml";
     if (callback)
     {
       callback(OpResult::ParseError, Message());

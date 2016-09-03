@@ -19,6 +19,7 @@ signals:
   void titleActive(bool isTitleActive);
   void serverActive(bool isServerActive);
   void messageChanged(long currentId, const QString& currentMessage, long currentPriority);
+  void appendLogString(const QString& tag, const QString& message);
 
 private slots:
   //from sms
@@ -47,8 +48,6 @@ private:
   bool isConfirmed_;
 
   class MessageHolder* unshownMessages_;
-
-  class ServerTest* serverTest_;
   class NetworkManager* networkManager_;
 };
 
