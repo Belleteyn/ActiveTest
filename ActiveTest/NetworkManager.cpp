@@ -48,7 +48,7 @@ void NetworkManager::emptyXmlRequest(const Callback<>& callback)
       }
       else
       {
-        Loggers::app->critical() << "gor error in PING" << reply->error();
+        Loggers::app->critical() << "got error in PING " << reply->error();
 
         if (callback)
         {
@@ -229,8 +229,11 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString, const ParseCal
           {
             Message message;
 
+            QString string = attributes.value("text").toString();
+            string = string.replace(QChar('+'), "%20");
+
             message.id = attributes.value("id").toLong();
-            message.text = QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8();
+            message.text = QUrl::fromPercentEncoding(string.toUtf8()).toUtf8();
             message.receiveTime = QTime::fromString(attributes.value("rcv_time").toString());
             message.priority = attributes.value("priority").toInt();
 
@@ -284,8 +287,11 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString, const P
       {
         Message message;
 
+        QString string = attributes.value("text").toString();
+        string = string.replace(QChar('+'), "%20");
+
         message.id = attributes.value("id").toLong();
-        message.text = QUrl::fromPercentEncoding(attributes.value("text").toUtf8()).toUtf8();
+        message.text = QUrl::fromPercentEncoding(string.toUtf8()).toUtf8();
         message.priority = 0;
 
         callback(OpResult::Success, message);

@@ -86,8 +86,6 @@ int main(int argc, char *argv[])
 
     Loggers::app->info() << "application started";
 
-    Loggers::app->info() << "asdfasdf";
-
     return a.exec();
   }
 

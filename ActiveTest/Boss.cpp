@@ -159,7 +159,7 @@ void Boss::onMessageDone(long id)
 
 void Boss::onMessageFailed(long id)
 {
-  Loggers::app->warn() << "failed to set message" << id << ", will try again on message callback";
+  Loggers::app->warn() << "failed to set message " << id << ", will try again on message callback";
 }
 
 void Boss::onEmptyXml()
