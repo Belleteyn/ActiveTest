@@ -42,7 +42,7 @@ ApplicationWindow {
             }
         }
 
-        onServerActive: {
+        onServerActiveChanged: {
             serverActive = isServerActive;
 
             if (!serverActive) {
@@ -116,8 +116,8 @@ ApplicationWindow {
 
             DesignLabel { text:qsTr("Server") + ":";  Layout.alignment: Qt.AlignRight }
             DesignLabel {
-                text: root.serverActive ? qsTr("active") : qsTr("not active")
-                color: root.serverActive ? "green" : "red"
+                text: root.titleActive ? (root.serverActive ? qsTr("active") : qsTr("not active")) : qsTr("unknown")
+                color: root.titleActive ? (root.serverActive ? "green" : "red") : "red"
                 font.bold: true
             }
         }

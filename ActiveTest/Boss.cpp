@@ -1,6 +1,7 @@
 #include "Boss.h"
 
 #include <QTime>
+#include <QTimer>
 #include <QSettings>
 #include <QGuiApplication>
 
@@ -12,8 +13,10 @@
 
 Boss::Boss(QObject *parent)
   : QObject(parent)
+  , serverPingSheduler_(nullptr)
   , smsObjectManager_(nullptr)
   , isConfirmed_(false)
+  , isServerActive_(false)
   , unshownMessages_(nullptr)
   , networkManager_(nullptr)
 {}
@@ -33,6 +36,7 @@ bool Boss::init()
 {
   try
   {
+    serverPingSheduler_ = new QTimer(this);
     unshownMessages_ = new MessageHolder();
     smsObjectManager_ = new SMSObjectManager(this);
     networkManager_ = new NetworkManager(this);
@@ -49,10 +53,17 @@ bool Boss::init()
     return false;
   }
 
+  serverPingSheduler_->setInterval(1000);
+
   QObject::connect(smsObjectManager_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
   QObject::connect(smsObjectManager_, SIGNAL(messageSet(long)), this, SLOT(onMessageSet(long)));
   QObject::connect(smsObjectManager_, SIGNAL(messageDone(long)), this, SLOT(onMessageDone(long)));
   QObject::connect(smsObjectManager_, SIGNAL(messageFailed(long)), this, SLOT(onMessageFailed(long)));
+
+  QObject::connect(serverPingSheduler_, &QTimer::timeout, this, &Boss::pingServer);
+
+  QObject::connect(this, SIGNAL(serverActiveChanged(bool)), this, SLOT(onServerActiveChanged(bool)));
+
   smsObjectManager_->start();
 
   return true;
@@ -66,34 +77,16 @@ void Boss::onTitleCheck(bool isTitleAlive)
     {
       isConfirmed_ = true;
 
-      networkManager_->emptyXmlRequest([this](const OpResult& opResult)
-      {
-        switch (opResult)
-        {
-          case OpResult::EmptyData:
-          case OpResult::Success:
-          {
-            onEmptyXml();
-          }
-          break;
-
-          case OpResult::RequestError:
-          {
-            onServerError();
-          }
-          break;
-
-          case OpResult::ParseError:
-          break;
-        }
-      });
+      serverPingSheduler_->start();
     }
   }
   else
   {
     Loggers::app->debug() << "title is dead";
     isConfirmed_ = false;
-    //TODO is server need to know this?
+
+    serverPingSheduler_->stop();
+    setServerActive(false);
   }
 
   titleActive(isTitleAlive);
@@ -162,52 +155,57 @@ void Boss::onMessageFailed(long id)
   Loggers::app->warn() << "failed to set message " << id << ", will try again on message callback";
 }
 
+void Boss::onServerActiveChanged(bool isServerActive)
+{
+  if (isServerActive)
+  {
+    if (!unshownMessages_->isEmpty())
+    {
+      Loggers::app->warn() << "some messages was not shown, show them first";
+      showNextMessage();
+    }
+    else
+    {
+      networkManager_->userMessageRequest([this](const OpResult& opResult, const Message& message)
+      {
+        switch (opResult)
+        {
+          case OpResult::EmptyData:
+          {
+            onEmptyMessageXml();
+          }
+          break;
+
+          case OpResult::Success:
+          {
+            onUserMessageReceived(message);
+          }
+          break;
+
+          case OpResult::RequestError:
+          {
+            onServerError();
+          }
+          break;
+
+          case OpResult::ParseError:
+          {
+            onParseError();
+          }
+          break;
+        }
+      });
+    }
+  }
+}
+
 void Boss::onEmptyXml()
 {
-  serverActive(true);
-  if (!unshownMessages_->isEmpty())
-  {
-    Loggers::app->warn() << "some messages was not shown, show them first";
-    showNextMessage();
-  }
-  else
-  {
-    networkManager_->userMessageRequest([this](const OpResult& opResult, const Message& message)
-    {
-      switch (opResult)
-      {
-        case OpResult::EmptyData:
-        {
-          onEmptyMessageXml();
-        }
-        break;
-
-        case OpResult::Success:
-        {
-          onUserMessageReceived(message);
-        }
-        break;
-
-        case OpResult::RequestError:
-        {
-          onServerError();
-        }
-        break;
-
-        case OpResult::ParseError:
-        {
-          onParseError();
-        }
-        break;
-      }
-    });
-  }
+  setServerActive(true);
 }
 
 void Boss::onEmptyMessageXml()
 {
-  serverActive(true);
-
   networkManager_->serviceMessageRequest([this](const OpResult& opResult, const Message& message)
   {
     switch (opResult)
@@ -238,7 +236,6 @@ void Boss::onEmptyMessageXml()
 
 void Boss::onUserMessageReceived(const Message& message)
 {
-  serverActive(true);
   //addSplittedMessage(id, message, time, priority);
   unshownMessages_->add(message);
   showNextMessage();
@@ -246,7 +243,6 @@ void Boss::onUserMessageReceived(const Message& message)
 
 void Boss::onServiceMessageReceived(const Message& message)
 {
-  serverActive(true);
   //addSplittedMessage(id, message, time);
   unshownMessages_->add(message);
   showNextMessage();
@@ -254,8 +250,7 @@ void Boss::onServiceMessageReceived(const Message& message)
 
 void Boss::onServerError()
 {
-  serverActive(false);
-  //TODO ?
+  setServerActive(false);
 }
 
 void Boss::onMobileError()
@@ -266,6 +261,40 @@ void Boss::onMobileError()
 void Boss::onParseError()
 {
   //TODO ?
+}
+
+void Boss::pingServer()
+{
+  networkManager_->emptyXmlRequest([this](const OpResult& opResult)
+  {
+    switch (opResult)
+    {
+      case OpResult::EmptyData:
+      case OpResult::Success:
+      {
+        onEmptyXml();
+      }
+      break;
+
+      case OpResult::RequestError:
+      {
+        onServerError();
+      }
+      break;
+
+      case OpResult::ParseError:
+      break;
+    }
+  });
+}
+
+void Boss::setServerActive(bool isServerActive)
+{
+  if (isServerActive_ != isServerActive)
+  {
+    isServerActive_ = isServerActive;
+    serverActiveChanged(isServerActive_);
+  }
 }
 
 void Boss::showNextMessage()

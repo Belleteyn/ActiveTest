@@ -17,7 +17,7 @@ public:
 
 signals:
   void titleActive(bool isTitleActive);
-  void serverActive(bool isServerActive);
+  void serverActiveChanged(bool isServerActive);
   void messageChanged(long currentId, const QString& currentMessage, long currentPriority);
   void appendLogString(const QString& tag, const QString& message);
 
@@ -27,6 +27,7 @@ private slots:
   void onMessageSet(long id);
   void onMessageDone(long id);
   void onMessageFailed(long id);
+  void onServerActiveChanged(bool isServerActive);
 
   //from server
   void onEmptyXml();
@@ -39,16 +40,20 @@ private slots:
   void onParseError();
 
 private:
+  void pingServer();
+  void setServerActive(bool isServerActive);
   void showNextMessage();
   void addSplittedMessage(long id, const QByteArray &message, const QTime &time, long priority = 0);
   QByteArray formMessage(QList<QByteArray>* splittedMessage, long id, long priority);
 
 private:
+  class QTimer* serverPingSheduler_;
   class SMSObjectManager* smsObjectManager_;
   bool isConfirmed_;
+  bool isServerActive_;
 
   class MessageHolder* unshownMessages_;
-  class NetworkManager* networkManager_;
+  class NetworkManager* networkManager_;  
 };
 
 #endif // BOSS_H
