@@ -7,7 +7,7 @@
 
 #include <SMSObjectManager.h>
 #include <MessageHolder.h>
-#include <NetworkManager.h>
+#include <NetworkManagerWithServerEmulation.h>
 
 #include <LogHelper.h>
 
@@ -39,7 +39,7 @@ bool Boss::init()
     serverPingSheduler_ = new QTimer(this);
     unshownMessages_ = new MessageHolder();
     smsObjectManager_ = new SMSObjectManager(this);
-    networkManager_ = new NetworkManager(this);
+    networkManager_ = new NetworkManagerWithServerEmulation(this);
   }
   catch (std::bad_alloc&)
   {

@@ -37,7 +37,8 @@ SOURCES += main.cpp \
     Boss.cpp \
     MessageHolder.cpp \
     SystemTray.cpp \
-    LogHelper.cpp
+    LogHelper.cpp \
+    NetworkManagerWithServerEmulation.cpp
 
 HEADERS += \
     pch.h \
@@ -51,7 +52,8 @@ HEADERS += \
     SystemTray.h \
     Message.h \
     LogHelper.h \
-    HandledSink.h
+    HandledSink.h \
+    NetworkManagerWithServerEmulation.h
 
 RESOURCES += \
     qml.qrc

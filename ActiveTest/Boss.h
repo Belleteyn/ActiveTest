@@ -53,7 +53,7 @@ private:
   bool isServerActive_;
 
   class MessageHolder* unshownMessages_;
-  class NetworkManager* networkManager_;  
+  class NetworkManagerWithServerEmulation* networkManager_;
 };
 
 #endif // BOSS_H
