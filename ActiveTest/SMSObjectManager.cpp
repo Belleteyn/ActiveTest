@@ -236,7 +236,7 @@ void SMSObjectManager::resetSMSObject()
     iSMSObject_ = NULL;
   }
 
-  titleCheck(iSMSObject_ != NULL);
+  titleCheck(false);
   //reset server confirmation
   //maybe it is not necessary
 }
