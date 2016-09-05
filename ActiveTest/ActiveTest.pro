@@ -1,6 +1,7 @@
 QT += core gui axcontainer qml quick network
 
-CONFIG += c++11 precompile_header
+CONFIG += c++11 precompile_header copy_settings
+CONFIG -= debug_and_release debug_and_release_target
 
 PRECOMPILED_HEADER = pch.h
 
@@ -8,15 +9,18 @@ TARGET = SMSClient
 
 include(dependencies.pri)
 
-CONFIG(debug, debug|release) {
+DESTDIR = bin
+OBJECTS_DIR = obj
+MOC_DIR = moc
+RCC_DIR = rcc
+UI_DIR = ui
 
-  message(debug build)
+CONFIG(debug, debug|release) {
 
   CONFIG += console
   DEFINES += LOG_DEBUG
-} else:CONFIG(release, debug|release) {
 
-  message(release build)
+} else:CONFIG(release, debug|release) {
 
   DEFINES += LOG_RELEASE
 }
@@ -51,3 +55,17 @@ HEADERS += \
 
 RESOURCES += \
     qml.qrc
+
+copy_settings {
+  SETTINGS_FILENAME = settings.ini
+
+  OTHER_FILES +=\
+    $$SETTINGS_FILENAME
+
+  copySettingsStep.commands = $(COPY_FILE) $$system_path($$PWD/$$SETTINGS_FILENAME) $$system_path($$OUT_PWD/$$DESTDIR)
+
+  first.depends = $(first) copySettingsStep
+  export(first.depends)
+  export(copySettingsStep.commands)
+  QMAKE_EXTRA_TARGETS += first copySettingsStep
+}
