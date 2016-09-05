@@ -18,6 +18,7 @@ NetworkManager::NetworkManager(QObject *parent)
   mobileParams_.server = settings.value("Mobile/server").toString();
   mobileParams_.use = settings.value("Mobile/use").toBool();
 
+  cache_.logging = settings.value("Other/networkRequestLogging").toBool();
   cache_.server = settings.value("Server/server").toString();
   cache_.password = settings.value("Server/password").toString();
   cache_.id = settings.value("Server/id").toInt();
@@ -97,6 +98,11 @@ void NetworkManager::messageSetConfirm(long id, const Callback<>& callback)
   params.addQueryItem("req", "MESSAGE_SHOWN");
   params.addQueryItem("req_data", QString::number(id) + "#");
 
+  if (cache_.logging)
+  {
+    Loggers::net->info() << params.query();
+  }
+
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
   {
@@ -154,6 +160,11 @@ void NetworkManager::sendMessageToMobile(const Message& message)
   params.addQueryItem("phone", QString::number(message.senderNum));
   params.addQueryItem("time", message.receiveTime.toString());
 
+  if (cache_.logging)
+  {
+    Loggers::net->info() << params.query();
+  }
+
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
   {
@@ -181,6 +192,11 @@ void NetworkManager::sendServiceMessageToMobile(const Message& message)
   params.addQueryItem("priority", QString::number(0));
   params.addQueryItem("time", message.receiveTime.toString());
 
+  if (cache_.logging)
+  {
+    Loggers::net->info() << params.query();
+  }
+
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
   {
@@ -206,6 +222,11 @@ QNetworkReply* NetworkManager::sendRequest(const char* type)
   params.addQueryItem("id", QString::number(cache_.id));
   params.addQueryItem("sig", cache_.hash);
   params.addQueryItem("req", QString(type).toUtf8());
+
+  if (cache_.logging)
+  {
+    Loggers::net->info() << params.query();
+  }
 
   return manager_->post(request, params.query().toUtf8());
 }

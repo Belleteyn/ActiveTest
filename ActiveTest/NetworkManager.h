@@ -48,6 +48,7 @@ private:
     QString password;
     int id;
     QByteArray hash;
+    bool logging = false;
   } cache_;
 
   struct MobileParams
