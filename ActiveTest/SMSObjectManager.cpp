@@ -12,9 +12,13 @@ SMSObjectManager::SMSObjectManager(QObject *parent)
   : QObject(parent)
   , iSMSObjectManager_(NULL)
   , iSMSCallBack_(NULL)
+  , iSMSVipCallBack_(NULL)
   , iSMSObject_(NULL)
+  , iSMSVipObject_(NULL)
   , titleMonitorTimer_(nullptr)
 {
+  QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
+  vipPriority_ = settings.value("Other/vipPriority", 1).toInt();
 }
 
 SMSObjectManager::~SMSObjectManager()
@@ -81,12 +85,24 @@ void SMSObjectManager::start()
 
 bool SMSObjectManager::testMessage(long id, const QByteArray &message, long priority)
 {
-  if (iSMSObject_)
+  if (priority == vipPriority_)
+  {
+    return testMessage(iSMSVipObject_, id, message, priority);
+  }
+  else
+  {
+    return testMessage(iSMSObject_, id, message, priority);
+  }
+}
+
+bool SMSObjectManager::testMessage(const ISMSObjectPtr &smsObj, long id, const QByteArray &message, long priority)
+{
+  if (smsObj)
   {
     BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
     float testResult;
 
-    HRESULT hr = iSMSObject_->TestMessage(bText, NULL, priority, id, &testResult);
+    HRESULT hr = smsObj->TestMessage(bText, NULL, priority, id, &testResult);
     SysFreeString(bText);
 
     if (FAILED(hr))
@@ -105,19 +121,31 @@ bool SMSObjectManager::testMessage(long id, const QByteArray &message, long prio
     Loggers::sms->warn() << "error testing message: no sms object";
     //that message will be shown after iSMSObject was fixed. do nothing.
     return false;
-  }
+    }
 }
 
 void SMSObjectManager::setMessage(long id, const QByteArray &message, long priority)
 {
-  if (iSMSObject_)
+  if (priority == vipPriority_)
+  {
+    setMessage(iSMSVipObject_, id, message, priority);
+  }
+  else
+  {
+    setMessage(iSMSObject_, id, message, priority);
+  }
+}
+
+void SMSObjectManager::setMessage(const ISMSObjectPtr &smsObj, long id, const QByteArray &message, long priority)
+{
+  if (smsObj)
   {
     //QString messageInfo = QString("id = " + QString::number(id));
 
     BSTR bText = SysAllocString(reinterpret_cast<const OLECHAR*>(QString::fromUtf8(message).utf16()));
     //BSTR bInfo = SysAllocString(reinterpret_cast<const OLECHAR*>(messageInfo.utf16()));
 
-    HRESULT hr = iSMSObject_->SetMessage(bText, NULL, priority, id);
+    HRESULT hr = smsObj->SetMessage(bText, NULL, priority, id);
     SysFreeString(bText);
     //SysFreeString(bInfo);
 
@@ -143,8 +171,11 @@ void SMSObjectManager::onTitleMonitorTimer()
 {
   QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
   QString smsObjectName = settings.value("Other/smsobjectname").toString();
+  QString vipSmsObjectName = settings.value("Other/vipSmsobjectname").toString();
   BSTR bSmsObjectName = SysAllocString(reinterpret_cast<const OLECHAR*>(smsObjectName.utf16()));
+  BSTR bVipSmsObjectName = SysAllocString(reinterpret_cast<const OLECHAR*>(vipSmsObjectName.utf16()));
 
+  //======SMS========
   IUnknownPtr iUnknown;
   HRESULT hr = iSMSObjectManager_->GetSMSObjectByName(bSmsObjectName, &iUnknown);
   SysFreeString(bSmsObjectName);
@@ -158,33 +189,49 @@ void SMSObjectManager::onTitleMonitorTimer()
   if (iSMSObject_ == NULL || iSMSObject_ != iUnknown)
   {
     Loggers::sms->debug() << "update SMS object " << smsObjectName;
-    updateSMSObject(iUnknown);
+    updateSMSObject(iSMSObject_, iUnknown, iSMSCallBack_);
   }
 
-  titleCheck(iSMSObject_ != NULL);
+  //======VIP SMS========
+  hr = iSMSObjectManager_->GetSMSObjectByName(bVipSmsObjectName, &iUnknown);
+  SysFreeString(bVipSmsObjectName);
+  if (FAILED(hr))
+  {
+    Loggers::sms->debug() << "failed to find " << vipSmsObjectName;
+    resetSMSObject();
+    return;
+  }
+
+  if (iSMSVipObject_ == NULL || iSMSVipObject_ != iUnknown)
+  {
+    Loggers::sms->debug() << "update SMS object " << smsObjectName;
+    updateSMSObject(iSMSVipObject_, iUnknown, iSMSVipCallBack_);
+  }
+
+  titleCheck(iSMSObject_ != NULL && iSMSVipObject_ != NULL);
 }
 
-void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
+void SMSObjectManager::updateSMSObject(ISMSObjectPtr& smsObj, const IUnknownPtr &iUnknown, CSMSCallBack* callback)
 {
-  if (iSMSObject_ != NULL)
+  if (smsObj != NULL)
     resetSMSObject();
 
-  if (iSMSCallBack_ != NULL)
+  if (callback != NULL)
     resetCallback();
 
-  iSMSObject_ = iUnknown;
-  if (iSMSObject_ == NULL)
+  smsObj = iUnknown;
+  if (smsObj == NULL)
   {
     Loggers::sms->warn() << "tried to set sms object to NULL";
     return;
   }
 
   LONG styleCount;
-  iSMSObject_->GetStyleCount(&styleCount);
+  smsObj->GetStyleCount(&styleCount);
   Loggers::sms->debug() << "sms object holds " << styleCount << " styles";
 
   HRESULT hr = CComObject<CSMSCallBack>::CreateInstance
-      (reinterpret_cast<CComObject<CSMSCallBack>**>(&iSMSCallBack_));
+      (reinterpret_cast<CComObject<CSMSCallBack>**>(&callback));
 
   if (FAILED(hr))
   {
@@ -194,10 +241,10 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
     return;
   }
 
-  iSMSCallBack_->AddRef();
+  callback->AddRef();
 
   IUnknownPtr spIUnk = NULL;
-  hr = iSMSCallBack_->QueryInterface(IID_IUnknown,(void**)&spIUnk);
+  hr = callback->QueryInterface(IID_IUnknown,(void**)&spIUnk);
   if (FAILED(hr))
   {
     Loggers::sms->critical() << "failed query smsCallback";
@@ -206,7 +253,7 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
     return;
   }
 
-  hr = iSMSObject_->Advise(spIUnk);
+  hr = smsObj->Advise(spIUnk);
   if (FAILED(hr))
   {
     Loggers::sms->critical() << "failed to advise sms callback";
@@ -219,7 +266,7 @@ void SMSObjectManager::updateSMSObject(const IUnknownPtr &iUnknown)
     Loggers::sms->debug() << "Callback successfully created";
   }
 
-  iSMSCallBack_->setCallback([this](long id)
+  callback->setCallback([this](long id)
   {
     Loggers::sms->debug() << "done message " << id;
     messageDone(id);
@@ -236,6 +283,13 @@ void SMSObjectManager::resetSMSObject()
     iSMSObject_ = NULL;
   }
 
+  if (iSMSVipObject_ != NULL)
+  {
+    iSMSVipObject_->UnAdvise();
+    iSMSVipObject_->Release();
+    iSMSVipObject_ = NULL;
+  }
+
   titleCheck(false);
   //reset server confirmation
   //maybe it is not necessary
@@ -247,5 +301,11 @@ void SMSObjectManager::resetCallback()
   {
     iSMSCallBack_->Release();
     iSMSCallBack_ = NULL;
+  }
+
+  if (iSMSVipCallBack_ != NULL)
+  {
+    iSMSVipCallBack_->Release();
+    iSMSVipCallBack_ = NULL;
   }
 }

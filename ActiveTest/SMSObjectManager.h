@@ -5,6 +5,8 @@
 #include <QObject>
 #include <QTimer>
 
+class CSMSCallBack;
+
 class SMSObjectManager : public QObject
 {
   Q_OBJECT
@@ -34,16 +36,23 @@ private:
   bool initSmsObjectManager();
   void showSmsObjects(); //just info
 
-  void updateSMSObject(const IUnknownPtr& iUnknown);
+  void updateSMSObject(ISMSObjectPtr& smsObj, const IUnknownPtr& iUnknown, CSMSCallBack *callback);
   void resetSMSObject();
   void resetCallback();
 
+  bool testMessage(const ISMSObjectPtr& smsObj, long id, const QByteArray& message, long priority);
+  void setMessage(const ISMSObjectPtr& smsObj, long id, const QByteArray& message, long priority);
+
 private:
   ISMSObjectsManagerPtr iSMSObjectManager_;
-  class CSMSCallBack* iSMSCallBack_;
+  CSMSCallBack* iSMSCallBack_;
+  CSMSCallBack* iSMSVipCallBack_;
 
   ISMSObjectPtr iSMSObject_;
+  ISMSObjectPtr iSMSVipObject_;
+
   QTimer* titleMonitorTimer_;
+  long vipPriority_;
 };
 
 #endif // SMSOBJECTMANAGER_H
