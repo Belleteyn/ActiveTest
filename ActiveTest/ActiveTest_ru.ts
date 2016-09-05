@@ -31,6 +31,11 @@
         <translation>не активен</translation>
     </message>
     <message>
+        <location filename="main.qml" line="119"/>
+        <source>unknown</source>
+        <translation>неизвестно</translation>
+    </message>
+    <message>
         <location filename="main.qml" line="117"/>
         <source>Server</source>
         <translation>Сервер</translation>
