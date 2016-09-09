@@ -155,62 +155,50 @@ void Boss::onMessageFailed(long id)
   Loggers::app->warn() << "failed to set message " << id << ", will try again on message callback";
 }
 
-void Boss::onServerActiveChanged(bool isServerActive)
+void Boss::userMessageRequest()
 {
-  if (isServerActive)
+  networkManager_->userMessageRequest([this](const OpResult& opResult, const Message& message)
   {
-    if (!unshownMessages_->isEmpty())
+    switch (opResult)
     {
-      Loggers::app->warn() << "some messages was not shown, show them first";
-      showNextMessage();
-    }
-    else
-    {
-      networkManager_->userMessageRequest([this](const OpResult& opResult, const Message& message)
+      case OpResult::EmptyData:
       {
-        switch (opResult)
-        {
-          case OpResult::EmptyData:
-          {
-            onEmptyMessageXml();
-          }
-          break;
+        onEmptyMessageXml();
+      }
+      break;
 
-          case OpResult::Success:
-          {
-            onUserMessageReceived(message);
-          }
-          break;
+      case OpResult::Success:
+      {
+        onUserMessageReceived(message);
+      }
+      break;
 
-          case OpResult::RequestError:
-          {
-            onServerError();
-          }
-          break;
+      case OpResult::RequestError:
+      {
+        onServerError();
+      }
+      break;
 
-          case OpResult::ParseError:
-          {
-            onParseError();
-          }
-          break;
-        }
-      });
+      case OpResult::ParseError:
+      {
+        userMessageRequest();/*onParseError();*/
+      }
+      break;
     }
-  }
+  });
 }
 
-void Boss::onEmptyXml()
-{
-  setServerActive(true);
-}
-
-void Boss::onEmptyMessageXml()
+void Boss::serviceMessageRequest()
 {
   networkManager_->serviceMessageRequest([this](const OpResult& opResult, const Message& message)
   {
     switch (opResult)
     {
       case OpResult::EmptyData:
+      case OpResult::ParseError:
+      {
+        userMessageRequest();
+      }
       break;
 
       case OpResult::Success:
@@ -224,19 +212,40 @@ void Boss::onEmptyMessageXml()
         onServerError();
       }
       break;
-
-      case OpResult::ParseError:
-      {
-        onParseError();
-      }
-      break;
     }
   });
+}
+
+void Boss::onServerActiveChanged(bool isServerActive)
+{
+  if (isServerActive)
+  {
+    if (!unshownMessages_->isEmpty())
+    {
+      Loggers::app->warn() << "some messages was not shown, show them first";
+      showNextMessage();
+    }
+    else
+    {
+      userMessageRequest();
+    }
+  }
+}
+
+void Boss::onEmptyXml()
+{
+  setServerActive(true);
+}
+
+void Boss::onEmptyMessageXml()
+{
+  serviceMessageRequest();
 }
 
 void Boss::onUserMessageReceived(const Message& message)
 {
   //addSplittedMessage(id, message, time, priority);
+
   unshownMessages_->add(message);
   showNextMessage();
 }
@@ -244,6 +253,7 @@ void Boss::onUserMessageReceived(const Message& message)
 void Boss::onServiceMessageReceived(const Message& message)
 {
   //addSplittedMessage(id, message, time);
+
   unshownMessages_->add(message);
   showNextMessage();
 }
@@ -255,12 +265,7 @@ void Boss::onServerError()
 
 void Boss::onMobileError()
 {
-  //TODO ?
-}
-
-void Boss::onParseError()
-{
-  //TODO ?
+  //TODO Добавить поддержку отправки сообщений на мобильный
 }
 
 void Boss::pingServer()
@@ -271,6 +276,7 @@ void Boss::pingServer()
     {
       case OpResult::EmptyData:
       case OpResult::Success:
+      case OpResult::ParseError:
       {
         onEmptyXml();
       }
@@ -280,9 +286,6 @@ void Boss::pingServer()
       {
         onServerError();
       }
-      break;
-
-      case OpResult::ParseError:
       break;
     }
   });
@@ -303,35 +306,7 @@ void Boss::showNextMessage()
   {
     messageChanged(-1, "", -1);
 
-    networkManager_->userMessageRequest([this](const OpResult& opResult, const Message& message)
-    {
-      switch (opResult)
-      {
-        case OpResult::EmptyData:
-        {
-          onEmptyMessageXml();
-        }
-        break;
-
-        case OpResult::Success:
-        {
-          onUserMessageReceived(message);
-        }
-        break;
-
-        case OpResult::RequestError:
-        {
-          onServerError();
-        }
-        break;
-
-        case OpResult::ParseError:
-        {
-          onParseError();
-        }
-        break;
-      }
-    });
+    userMessageRequest();
 
     return;
   }

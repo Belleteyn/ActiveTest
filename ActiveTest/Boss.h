@@ -37,12 +37,15 @@ private slots:
 
   void onServerError();
   void onMobileError();
-  void onParseError();
 
 private:
   void pingServer();
+  void userMessageRequest();
+  void serviceMessageRequest();
+
   void setServerActive(bool isServerActive);
   void showNextMessage();
+
   void addSplittedMessage(long id, const QByteArray &message, const QTime &time, long priority = 0);
   QByteArray formMessage(QList<QByteArray>* splittedMessage, long id, long priority);
 
@@ -53,7 +56,7 @@ private:
   bool isServerActive_;
 
   class MessageHolder* unshownMessages_;
-  class NetworkManager* networkManager_;  
+  class NetworkManager* networkManager_;
 };
 
 #endif // BOSS_H
