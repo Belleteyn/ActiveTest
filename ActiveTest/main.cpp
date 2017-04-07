@@ -55,7 +55,11 @@ int main(int argc, char *argv[])
     Loggers::sms = spdlog::create("sms", std::begin(sinks), std::end(sinks));
     Loggers::app = spdlog::create("app", std::begin(sinks), std::end(sinks));
 
-    spdlog::set_level(spdlog::level::trace);
+#ifdef LOG_DEBUG
+		spdlog::set_level(spdlog::level::trace);
+#else
+		spdlog::set_level(spdlog::level::info);
+#endif
 
     if (!(Loggers::net && Loggers::sms && Loggers::app))
     {
