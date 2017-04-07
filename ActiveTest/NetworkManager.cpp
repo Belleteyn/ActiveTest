@@ -80,7 +80,7 @@ void NetworkManager::userMessageRequest(const Callback<const Message&>& callback
 			}
 			else
 			{
-				Loggers::app->warn() << "gor error in GET_MESSAGES";
+				Loggers::net->error() << "gor error in GET_MESSAGES";
 
 				if (callback)
 				{
@@ -118,7 +118,7 @@ void NetworkManager::messageSetConfirm(long id, const Callback<>& callback)
 		{
 			if(reply->error() != QNetworkReply::NoError)
 			{
-				Loggers::app->warn() << "gor error in MESSAGE_SHOWN";
+				Loggers::net->error() << "gor error in MESSAGE_SHOWN";
 
 				if (callback)
 				{
@@ -144,7 +144,7 @@ void NetworkManager::serviceMessageRequest(const Callback<const Message&>& callb
 			}
 			else
 			{
-				Loggers::app->warn() << "gor error in GET_SERVICE_MESSAGE";
+				Loggers::net->error() << "gor error in GET_SERVICE_MESSAGE";
 				if (callback)
 				{
 					callback(OpResult::RequestError, Message());
@@ -182,7 +182,7 @@ void NetworkManager::sendMessageToMobile(const Message& message)
 		{
 			if(reply->error() != QNetworkReply::NoError)
 			{
-				Loggers::app->warn() << "gor error in sendMessageToMobile";
+				Loggers::net->error() << "gor error in sendMessageToMobile";
 			}
 		};
 
@@ -239,6 +239,8 @@ QNetworkReply* NetworkManager::sendRequest(const char* type)
   {
     Loggers::net->info() << params.query();
   }
+
+	Loggers::net->trace() << "sending request " << type;
 
 	return manager_->post(request, params.query().toUtf8());
 }
