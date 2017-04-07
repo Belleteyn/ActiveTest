@@ -53,7 +53,9 @@ bool Boss::init()
     return false;
   }
 
-  serverPingSheduler_->setInterval(1000);
+	QSettings settings(QGuiApplication::applicationDirPath() + "/settings.ini", QSettings::IniFormat);
+	int pingInterval = settings.value("Server/pingTimeout", 1000).toInt();
+	serverPingSheduler_->setInterval(pingInterval);
 
   QObject::connect(smsObjectManager_, SIGNAL(titleCheck(bool)), this, SLOT(onTitleCheck(bool)));
   QObject::connect(smsObjectManager_, SIGNAL(messageSet(long)), this, SLOT(onMessageSet(long)));
