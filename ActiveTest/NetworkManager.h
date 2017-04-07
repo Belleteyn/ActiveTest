@@ -6,6 +6,9 @@
 #include <QObject>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QTimer>
+#include <QMap>
+#include <QMutex>
 
 #include <Message.h>
 
@@ -37,10 +40,21 @@ private:
   void parseMessageXml(const QByteArray& xmlString, const ParseCallback& callback);
 
   template <typename ParseCallback>
-  void parseServiceMessageXml(const QByteArray& xmlString, const ParseCallback& callback);
+	void parseServiceMessageXml(const QByteArray& xmlString, const ParseCallback& callback);
+
+	template <typename Handler>
+	void restartTimer(QNetworkReply* reply, const Handler& handler);
+	void abortTimer(QNetworkReply* reply);
+
+	void addConnection(QNetworkReply* reply, const QMetaObject::Connection& connection);
+	void addConnection(QNetworkReply* reply, const QVector<QMetaObject::Connection>& connections);
+	void clearConnections(QNetworkReply* reply);
 
 private:
   QNetworkAccessManager* manager_;
+	QTimer* timer_;
+	QMap<QNetworkReply*, QVector<QMetaObject::Connection>> replyConnections_;
+	QMutex replyMutex_;
 
   struct RequestData
   {

@@ -7,6 +7,7 @@
 #include <QGuiApplication>
 #include <QXmlStreamReader>
 #include <QSettings>
+#include <QMutexLocker>
 
 #include <LogHelper.h>
 
@@ -31,33 +32,38 @@ NetworkManager::NetworkManager(QObject *parent)
   cache_.hash = hash.result().toHex();
 
   manager_ = new QNetworkAccessManager(this);
+	timer_ = new QTimer(this);
+
+	timer_->setSingleShot(true);
+	timer_->setInterval(settings.value("Server/timeout", 5000).toInt());
 }
 
 void NetworkManager::emptyXmlRequest(const Callback<>& callback)
 {
   QNetworkReply* reply = sendRequest("PING");
   if (reply)
-  {
-    QObject::connect(reply, &QNetworkReply::finished, [=]()
-    {
-      if(reply->error() == QNetworkReply::NoError)
-      {
-        if (callback)
-        {
-          callback(OpResult::Success);
-        }
-      }
-      else
-      {
-        Loggers::app->critical() << "got error in PING " << reply->error();
+	{
+		auto handler = [=](QNetworkReply* reply)
+		{
+			if(reply->error() == QNetworkReply::NoError)
+			{
+				if (callback)
+				{
+					callback(OpResult::Success);
+				}
+			}
+			else
+			{
+				Loggers::app->critical() << "got error in PING " << reply->error();
 
-        if (callback)
-        {
-          callback(OpResult::RequestError);
-        }
-      }
-      reply->deleteLater();
-    });
+				if (callback)
+				{
+					callback(OpResult::RequestError);
+				}
+			}
+		};
+
+		restartTimer(reply, handler);
   }
 }
 
@@ -65,23 +71,25 @@ void NetworkManager::userMessageRequest(const Callback<const Message&>& callback
 {
   QNetworkReply* reply = sendRequest("GET_MESSAGES");
   if (reply)
-  {
-    QObject::connect(reply, &QNetworkReply::finished, [=]()
-    {
-      if(reply->error() == QNetworkReply::NoError)
-      {
-        parseMessageXml(reply->readAll(), callback);
-      }
-      else
-      {
-        Loggers::app->warn() << "gor error in GET_MESSAGES";
-        if (callback)
-        {
-          callback(OpResult::RequestError, Message());
-        }
-      }
-      reply->deleteLater();
-    });
+	{
+		auto handler = [=](QNetworkReply* reply)
+		{
+			if(reply->error() == QNetworkReply::NoError)
+			{
+				parseMessageXml(reply->readAll(), callback);
+			}
+			else
+			{
+				Loggers::app->warn() << "gor error in GET_MESSAGES";
+
+				if (callback)
+				{
+					callback(OpResult::RequestError, Message());
+				}
+			}
+		};
+
+		restartTimer(reply, handler);
   }
 }
 
@@ -105,20 +113,21 @@ void NetworkManager::messageSetConfirm(long id, const Callback<>& callback)
 
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
-  {
-    QObject::connect(reply, &QNetworkReply::finished, [=]()
-    {
-      if(reply->error() != QNetworkReply::NoError)
-      {
-        Loggers::app->warn() << "gor error in MESSAGE_SHOWN";
+	{
+		auto handler = [=](QNetworkReply* reply)
+		{
+			if(reply->error() != QNetworkReply::NoError)
+			{
+				Loggers::app->warn() << "gor error in MESSAGE_SHOWN";
 
-        if (callback)
-        {
-          callback(OpResult::RequestError);
-        }
-      }
-      reply->deleteLater();
-    });
+				if (callback)
+				{
+					callback(OpResult::RequestError);
+				}
+			}
+		};
+
+		restartTimer(reply, handler);
   }
 }
 
@@ -126,23 +135,24 @@ void NetworkManager::serviceMessageRequest(const Callback<const Message&>& callb
 {
   QNetworkReply* reply = sendRequest("GET_SERVICE_MESSAGE");
   if (reply)
-  {
-    QObject::connect(reply, &QNetworkReply::finished, [=]()
-    {
-      if(reply->error() == QNetworkReply::NoError)
-      {
-        parseServiceMessageXml(reply->readAll(), callback);
-      }
-      else
-      {
-        Loggers::app->warn() << "gor error in GET_SERVICE_MESSAGE";
-        if (callback)
-        {
-          callback(OpResult::RequestError, Message());
-        }
-      }
-      reply->deleteLater();
-    });
+	{
+		auto handler = [=](QNetworkReply* reply)
+		{
+			if(reply->error() == QNetworkReply::NoError)
+			{
+				parseServiceMessageXml(reply->readAll(), callback);
+			}
+			else
+			{
+				Loggers::app->warn() << "gor error in GET_SERVICE_MESSAGE";
+				if (callback)
+				{
+					callback(OpResult::RequestError, Message());
+				}
+			}
+		};
+
+		restartTimer(reply, handler);
   }
 }
 
@@ -167,15 +177,16 @@ void NetworkManager::sendMessageToMobile(const Message& message)
 
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
-  {
-    QObject::connect(reply, &QNetworkReply::finished, [=]()
-    {
-      if(reply->error() != QNetworkReply::NoError)
-      {
-        Loggers::app->warn() << "gor error in sendMessageToMobile";
-      }
-      reply->deleteLater();
-    });
+	{
+		auto handler = [=](QNetworkReply* reply)
+		{
+			if(reply->error() != QNetworkReply::NoError)
+			{
+				Loggers::app->warn() << "gor error in sendMessageToMobile";
+			}
+		};
+
+		restartTimer(reply, handler);
   }
 }
 
@@ -199,15 +210,16 @@ void NetworkManager::sendServiceMessageToMobile(const Message& message)
 
   QNetworkReply* reply = manager_->post(request, params.query().toUtf8());
   if (reply)
-  {
-    QObject::connect(reply, &QNetworkReply::finished, [=]()
-    {
-      if(reply->error() != QNetworkReply::NoError)
-      {
-        Loggers::app->warn() << "gor error in sendServiceMessageToMobile";
-      }
-      reply->deleteLater();
-    });
+	{
+		auto handler = [=](QNetworkReply* reply)
+		{
+			if(reply->error() != QNetworkReply::NoError)
+			{
+				Loggers::app->warn() << "gor error in sendServiceMessageToMobile";
+			}
+		};
+
+		restartTimer(reply, handler);
   }
 }
 
@@ -228,7 +240,7 @@ QNetworkReply* NetworkManager::sendRequest(const char* type)
     Loggers::net->info() << params.query();
   }
 
-  return manager_->post(request, params.query().toUtf8());
+	return manager_->post(request, params.query().toUtf8());
 }
 
 template <typename ParseCallback>
@@ -337,4 +349,93 @@ void NetworkManager::parseServiceMessageXml(const QByteArray& xmlString, const P
       callback(OpResult::ParseError, Message());
     }
   }
+}
+
+template<typename Handler>
+void NetworkManager::restartTimer(QNetworkReply* reply, const Handler& handler)
+{
+	auto onReplyFinished = [=]()
+	{
+		abortTimer(reply);
+
+		handler(reply);
+
+		reply->deleteLater();
+	};
+
+	auto onTimeOut = [reply]()
+	{
+		Loggers::net->trace() << "request time out. aborting";
+		reply->abort();
+	};
+
+	QVector<QMetaObject::Connection> connections;
+
+	connections << QObject::connect(timer_, &QTimer::timeout, onTimeOut);
+
+	connections << QObject::connect(reply, &QNetworkReply::finished, onReplyFinished);
+
+	connections << QObject::connect(reply, static_cast<void(QNetworkReply::*)(QNetworkReply::NetworkError)>(&QNetworkReply::error)
+		, onReplyFinished);
+
+	addConnection(reply, connections);
+
+	timer_->start();
+}
+
+void NetworkManager::abortTimer(QNetworkReply* reply)
+{
+	if (timer_->isActive())
+	{
+		timer_->stop();
+
+		Loggers::net->trace() << "timer stopped!";
+	}
+
+	clearConnections(reply);
+}
+
+void NetworkManager::addConnection(QNetworkReply* reply, const QMetaObject::Connection& connection)
+{
+	QMutexLocker locker(&replyMutex_);
+
+	if (!replyConnections_.contains(reply))
+	{
+		replyConnections_.insert(reply, QVector<QMetaObject::Connection>());
+	}
+
+	replyConnections_[reply].append(connection);
+	Loggers::net->trace() << "connection added";
+}
+
+void NetworkManager::addConnection(QNetworkReply *reply, const QVector<QMetaObject::Connection>& connections)
+{
+	QMutexLocker locker(&replyMutex_);
+
+	replyConnections_.insert(reply, connections);
+
+	Loggers::net->trace() << replyConnections_[reply].size() << " connections added";
+}
+
+void NetworkManager::clearConnections(QNetworkReply* reply)
+{
+	QMutexLocker locker(&replyMutex_);
+
+	if (replyConnections_.contains(reply))
+	{
+		auto& connections = replyConnections_[reply];
+		for (const auto& connection : connections)
+		{
+			if (QObject::disconnect(connection))
+			{
+				Loggers::net->trace() << "connection removed";
+			}
+		}
+
+		replyConnections_.remove(reply);
+	}
+	else
+	{
+		Loggers::net->trace() << "no connections for this reply";
+	}
 }
