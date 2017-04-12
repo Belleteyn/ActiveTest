@@ -304,7 +304,7 @@ void NetworkManager::parseMessageXml(const QByteArray& xmlString, const ParseCal
     {
       callback(OpResult::ParseError, Message());
     }
-  }
+	}
 }
 
 template <typename ParseCallback>
